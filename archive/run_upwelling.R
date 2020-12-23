@@ -2,11 +2,42 @@ library(bayesdfa)
 library(ggplot2)
 library(dplyr)
 
-df = read.csv(file.choose())
+df = read.csv("data/upwelling.csv")
 df$station = substr(df$POSITION,1,8)
 df$year = as.numeric(substr(df$POSITION,10,13))
 
-df = dplyr::filter(df, station=="45N 125W")
+#df = dplyr::filter(df, station=="45N 125W")
+
+ggplot(df, aes(year, MAR, group=station, col=station)) + geom_line()
+
+df = df %>%
+  dplyr::filter(year < 2020, year >= 2000) %>%
+  dplyr::rename(obs = MAR, ts = station, time = year) %>%
+  dplyr::filter(!is.na(obs)) %>%
+  dplyr::select(ts, time, obs) %>%
+  dplyr::filter(ts %in% c("21N 107W","24N 113W","60N 146W","60N 149W")==FALSE)
+
+df = dplyr::filter(df, ts%in%c("Lower Umpqua River","Middle Umpqua River",
+  "Siltcoos Lake","South Umpqua River","Tahkenitch Lake","Tenmile Lake")==FALSE)
+
+df$ts = as.numeric(as.factor(df$ts))
+m1 = fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, num_trends = 1)
+m2 = fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, num_trends = 2)
+m3 = fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, num_trends = 3)
+
+m3 = fit_dfa(y = df, data_shape = "long", iter = 3000, chains = 1, trend_model="gp", n_knots = 9, num_trends = 1)
+m4 = fit_dfa(y = df, data_shape = "long", iter = 3000, chains = 1, trend_model="gp", n_knots = 9, num_trends = 2)
+
+m5 = fit_dfa(y = df, data_shape = "long", iter = 3000, chains = 1, trend_model="spline", n_knots = 20, num_trends = 3)
+m6 = fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, trend_model="spline", n_knots = 20, num_trends = 2)
+
+loos = NA
+for(i in 10:20) {
+  loos[i] = loo(fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, trend_model="spline", n_knots = i, num_trends = 2))
+}
+
+fit = fit_dfa(y = df, data_shape = "long", iter = 1000, chains = 1, trend_model="gp", n_knots = 17, num_trends = 3,
+  estimate_process_sigma = TRUE)
 
 df = df %>% gather(month, upwelling, JAN:DEC) %>%
   dplyr::select(-POSITION, -station)
