@@ -64,6 +64,9 @@ x = dplyr::rename(x, ts = scientific_name, time = year, obs = mu) %>%
 x = dplyr::select(x, -quarter)
 x$ts = as.numeric(as.factor((x$ts)))
 
+x$obs[which(x$obs==0)]=NA
+x$obs = log(x$obs)
+
 saveRDS(x, "calcofi_data.rds")
 x = readRDS("calcofi_data.rds")
 #x$ts = as.numeric(as.factor(x$ts))

@@ -26,7 +26,7 @@ m = list()
 fold_ids = x$time-min(x$time)+1
 
 fit = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, sample=FALSE)
-m[[1]] = dfa_cv(fit, cv_method="loocv", iter=50, chains=1, fold_ids=fold_ids)
+m[[1]] = dfa_cv(fit, cv_method="loocv", iter=mcmc_iter, chains=1, fold_ids=fold_ids)
 saveRDS(m,"landings_models_cv.rds")
 # fit models with varying numbers of knots in a b-spline
 fit = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline",n_knots=6, sample=FALSE)

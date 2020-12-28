@@ -30,7 +30,8 @@ m[[10]] = fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends =
 m[[11]] = fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends = 2, trend_model = "gp",n_knots=24)
 m[[12]] = fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends = 2, trend_model = "gp",n_knots=30)
 
-saveRDS(m[[3]],"landings_spline_6.rds")
+fit = fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends = 2, trend_model = "spline",n_knots=18)
+saveRDS(fit,"landings_spline_18.rds")
 
 loos = data.frame("loo"=rep(NA,5), "loo_se"=NA, Model="B-spline","knots"=seq(6,30,6))
 for(i in 3:7) {
