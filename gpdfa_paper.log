@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99998 (TeX Live 2017) (preloaded format=xelatex 2017.5.23)  27 DEC 2020 17:22
+This is XeTeX, Version 3.14159265-2.6-0.99998 (TeX Live 2017) (preloaded format=xelatex 2017.5.23)  28 DEC 2020 05:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1194,21 +1194,21 @@ File: gpdfa_paper_files/figure-latex/fig3-1.pdf Graphic file (type QTm)
 <use  "gpdfa_paper_files/figure-latex/fig3-1.pdf" > [15]
 File: gpdfa_paper_files/figure-latex/fig4-1.pdf Graphic file (type QTm)
 <use  "gpdfa_paper_files/figure-latex/fig4-1.pdf" > [16] [17] [18] [19]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 861.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 865.
 [20]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 861.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 865.
 (./gpdfa_paper.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 861.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 861.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 865.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 865.
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 861.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 865.
  ) 
 Here is how much of TeX's memory you used:
  24012 strings out of 493005
  434420 string characters out of 6134596
- 627286 words of memory out of 5000000
+ 627254 words of memory out of 5000000
  27751 multiletter control sequences out of 15000+600000
  10034 words of font info for 67 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191

@@ -108,19 +108,17 @@ post_hi = apply(r$Z_rot,2,quantile,0.975)
 # x_gp = apply(rstan::extract(fit_gp$model,"x")$x,3,mean)
 ```
 
-For our application of smooth dynamic factor models to the CalCOFI juvenile rockfish dataset, we found that the B-spline trend model with 6 knots had slightly better (higher) ELPD values than alternatives (Table 1). Aside from the conventional random walk DFA model which resulted in the lowest ELPD value, many models had similar ELPD values, indicating similar predictive ability. This can also be confirmed by examining predictions, where many models appeared to capture the dynamics of the three *Sebastes* time series well \@ref(fig:fig1). All three species were estimated to have positive loadings on the estimated trend, with shortbelly rockfishes having the highest loading (`r round(post_means[3],2)`, 95% posterior interval = `r round(post_low[3],2)`-`r round(post_hi[3],2)`) followed by aurora (`r round(post_means[1],2)`, 95% posterior interval = `r round(post_low[1],2)`-`r round(post_hi[1],2)`) and bocaccio rokfishes with the weakest loadings (`r round(post_means[2],2)`, 95% posterior interval = `r round(post_low[2],2)`-`r round(post_hi[2],2)`). Though the model with 6 knots was found to have the highest predictive accuracy, the simplicity of this model affected the ability to capture the most recent variability in the time series between 2015-2019, when juvenile rockfish densities were among the highest ever observed (Fig 1).
+For our application of smooth dynamic factor models to the CalCOFI juvenile rockfish dataset, we found that the B-spline trend model with 6 knots had the highest ELPD values than alternative models (Table 1). Varying the number of knots for the B-spline or Gaussian process models had little effect on ELPD, and the B-spline models performed slighlty better than the Gaussian process models (Table 1). All smooth trend models had higher predictive accuracy compared to the conventional random walk DFA model. All three *Sebastes* species were estimated to have positive loadings on the estimated trend, with shortbelly rockfishes having the highest loading (`r round(post_means[3],2)`, 95% posterior interval = `r round(post_low[3],2)`-`r round(post_hi[3],2)`) followed by aurora (`r round(post_means[1],2)`, 95% posterior interval = `r round(post_low[1],2)`-`r round(post_hi[1],2)`) and bocaccio rockfishes with the weakest loadings (`r round(post_means[2],2)`, 95% posterior interval = `r round(post_low[2],2)`-`r round(post_hi[2],2)`). Though the model with 6 knots was found to have the highest predictive accuracy, the simplicity of this model was not able to capture the most recent patterns between 2015-2019, when juvenile rockfish densities experienced high densities and high variability (Fig 1).
 
 When smooth trend B-spline and Gaussian predictive process models are applied to commercial fisheries landings data, the model with the highest ELPD was the B-spline model with 24 knots. Across all models, those that modeled trends as B-splines had higher predictive accuracy than those that modeled trends as Gaussian processes or random walks (Table 2). All models considered for this dataset included 2 latent trends. The first trend exhibited nearly linear change from 1981 - 2001 and was relatively stationary from 2001 - 2019 (Fig. 2). The second trend represented change from the early 1990s, with the strongest change occuring 2010 - present. Estimates of the loadings from the model with highest ELPD indicated most species or species groups loaded negatively on trend 1, with the exception of Pacific whiting (Fig. 3). Trend 2 from this model appears to contrast species with relatively stationary catches before declining in 2010 (e.g. Arrowtooth flounder, *Atheresthes stomas*) versus Petrale sole (*Eopsetta jordani*) - one of the only non-whiting species that has experienced positive catches since 2010. Predictions across all models appeared to characterize the trends of most species - though none of the approaches were able to capture the variability in Pacific whiting catches since 2000 (Fig. 4).
 
 ## Discussion
 
-We found that the when compared to conventional DFA with trends as random walks, modeling trends as smooth functions resulted in models with higher predictive ability for out of sample cross-validation. Both applications in our analysis highlighted that models with trends as B-splines received the highest support, and that these models had better predictive ability than Gaussian predictive process models. Several important caveats in our comparisons are that the model predictions and resulting ELPD estimates are conditioned on the location and number of knots. For models with missing data, or datasets with unevenly distributed replicate samples, it may be important to consider non-uniform knot vectors. 
+We found that the when compared to conventional DFA with trends as random walks, modeling trends as smooth functions resulted in models with higher predictive ability for out of sample cross-validation. Both applications in our analysis highlighted that models with trends as B-splines received the highest support, and that these models had better predictive ability than Gaussian predictive process models. In evaluating 1-trend models of juvenile rockfish densities, we found that varying the number of knots had little effect on predictive accuracy, though models with $> 6$ knots were better able to capture recent variability in these time series. For our 2-trend models exploring the dynamics of groundfish catches, we also found that the smooth trend models outperformed the conventional random walk DFA models, and that modeling trends as B-splines resulted in higher predictive accuracy compared to the Gaussian process models. We used uniform knots for both types of smooth trend models, and these results would be expected to change slightly if the knot locations were adjusted. For models with missing data, or datasets with unevenly distributed replicate samples, it may be important to consider non-uniform knot vectors. 
 
+Paragraph here on similarities and differences in the models and interpretation
 A couple sentences about comparing GP / BS models, flexibility, etc. 
 
-Add a few sentences about case studies etc
-
-There are several important differences between the conventional random walk DFA model, and the smooth trend models developed here. In the random walk model, observations 
 
 Because of their flexibility, applications of LOOIC or related model selection to DFA models may result in poor diagnostics. As an alternative, we implemented cross-validation in two applications to identify the model with the highest predictive accuracy. In each case, we implemented k-fold cross validation with each year of the time series held out in turn and predicted from the remaining data. Our first application of these methods to the CalCOFI juvenile rockfish dataset highlighted that models with high predictive accuracy across the full time series may not be the best for capturing variation in particular periods of interest. Between 2015 - 2019 for example, the three rockfish species in our case study experienced a pulse that was not captured by simpler smooth models (Fig. 1) - despite those models having higher predictive accuracy across the time series. Several alternative approaches to cross validation may be useful if predictions in some years are more important than others. For example, the analysis of CalCOFI data could be repeated, but the ELPD could be calculated using only the last decade as test data. A second approach would be to implement leave-future-out cross-validation, which differs from our approach in that data points are only used to predict future years, not historical values [@burkner2020a]. While none of the models included in our analysis included covariates, the cross-validation approaches described here can be extended identify predictor variables (such as environmental drives) that result in increased predictive accuracy.
 
@@ -130,7 +128,7 @@ Because of their flexibility, applications of LOOIC or related model selection t
 
 ## Tables 
 
-Table 1. Expected log posterior density (ELPD, with standard errors) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series.
+Table 1. Expected log posterior density (ELPD, with standard errors in parentheses) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series.
 
 ```{r table1, echo=FALSE}
 cv_calcofi = readRDS("output/calcofi_models_cv.rds")
@@ -139,10 +137,9 @@ cv_landings = readRDS("output/landings_models_cv.rds")
 
 tab = data.frame("Trend model"=c("Random walk", rep("B-spline",5), rep("Gaussian process",5)),
   "Knots" = c(NA, rep(seq(6,30,by=6),2)),
-  "CalCOFI ELPD" = round(unlist(lapply(cv_calcofi,getElement,3)), 2),
-  "CalCOFI SE" = round(unlist(lapply(cv_calcofi,getElement,4)),2),  
-  "Landings ELPD" = round(unlist(lapply(cv_landings,getElement,3)), 2),
-  "Landings SE" = round(unlist(lapply(cv_landings,getElement,4)),2))
+  "CalCOFI" = paste0(round(unlist(lapply(cv_calcofi,getElement,3)), 2), " (",round(unlist(lapply(cv_calcofi,getElement,4)),2),")"),
+  "Landings" = paste0(round(unlist(lapply(cv_landings,getElement,3)), 2), " (",round(unlist(lapply(cv_landings,getElement,4)),2),")")
+  )
 knitr::kable(tab)
 ```
 
@@ -206,7 +203,7 @@ g1 = ggplot(trend_df, aes(time,mean)) +
     values = c("shortbelly" = "#2A788EFF")) +
   #scale_color_manual("Species",
   #  values = c("aurora" = "#440154FF", "shortbelly" = "#2A788EFF", "bocaccio" = "#7AD151FF")) +
-  ylab("Trend estimate") +
+  ylab("Standardized densities and trend") +
   xlab("Year") + 
   theme(legend.position = "none")
 
