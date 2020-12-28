@@ -94,18 +94,18 @@ As a measure of predictive accuracy, we used the cross-validation results for ea
 ## Results
 
 ```{r echo=FALSE}
-m = readRDS("calcofi_models.rds")
-fit = m[[1]]
+m = readRDS("output/calcofi_models.rds")
+fit = m[[2]]
 r = bayesdfa::rotate_trends(fit)
 post_means = apply(r$Z_rot,2,mean)
 post_low = apply(r$Z_rot,2,quantile,0.025)
 post_hi = apply(r$Z_rot,2,quantile,0.975)
-
-# compare 6-knot GP and BS model
-fit_bs = m[[2]]
-fit_gp = m[[7]]
-x_bs = apply(rstan::extract(fit_bs$model,"x")$x,3,mean)
-x_gp = apply(rstan::extract(fit_gp$model,"x")$x,3,mean)
+# 
+# # compare 6-knot GP and BS model
+# fit_bs = m[[2]]
+# fit_gp = m[[7]]
+# x_bs = apply(rstan::extract(fit_bs$model,"x")$x,3,mean)
+# x_gp = apply(rstan::extract(fit_gp$model,"x")$x,3,mean)
 ```
 
 For our application of smooth dynamic factor models to the CalCOFI juvenile rockfish dataset, we found that the B-spline trend model with 6 knots had slightly better (higher) ELPD values than alternatives (Table 1). Aside from the conventional random walk DFA model which resulted in the lowest ELPD value, many models had similar ELPD values, indicating similar predictive ability. This can also be confirmed by examining predictions, where many models appeared to capture the dynamics of the three *Sebastes* time series well \@ref(fig:fig1). All three species were estimated to have positive loadings on the estimated trend, with shortbelly rockfishes having the highest loading (`r round(post_means[3],2)`, 95% posterior interval = `r round(post_low[3],2)`-`r round(post_hi[3],2)`) followed by aurora (`r round(post_means[1],2)`, 95% posterior interval = `r round(post_low[1],2)`-`r round(post_hi[1],2)`) and bocaccio rokfishes with the weakest loadings (`r round(post_means[2],2)`, 95% posterior interval = `r round(post_low[2],2)`-`r round(post_hi[2],2)`). Though the model with 6 knots was found to have the highest predictive accuracy, the simplicity of this model affected the ability to capture the most recent variability in the time series between 2015-2019, when juvenile rockfish densities were among the highest ever observed (Fig 1).
@@ -115,6 +115,8 @@ When smooth trend B-spline and Gaussian predictive process models are applied to
 ## Discussion
 
 We found that the when compared to conventional DFA with trends as random walks, modeling trends as smooth functions resulted in models with higher predictive ability for out of sample cross-validation. Both applications in our analysis highlighted that models with trends as B-splines received the highest support, and that these models had better predictive ability than Gaussian predictive process models. Several important caveats in our comparisons are that the model predictions and resulting ELPD estimates are conditioned on the location and number of knots. For models with missing data, or datasets with unevenly distributed replicate samples, it may be important to consider non-uniform knot vectors. 
+
+A couple sentences about comparing GP / BS models, flexibility, etc. 
 
 Add a few sentences about case studies etc
 
@@ -131,9 +133,9 @@ Because of their flexibility, applications of LOOIC or related model selection t
 Table 1. Expected log posterior density (ELPD, with standard errors) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series.
 
 ```{r table1, echo=FALSE}
-cv_calcofi = readRDS("calcofi_models_cv.rds")
+cv_calcofi = readRDS("output/calcofi_models_cv.rds")
 
-cv_landings = readRDS("landings_models_cv.rds")
+cv_landings = readRDS("output/landings_models_cv.rds")
 
 tab = data.frame("Trend model"=c("Random walk", rep("B-spline",5), rep("Gaussian process",5)),
   "Knots" = c(NA, rep(seq(6,30,by=6),2)),
@@ -147,7 +149,7 @@ knitr::kable(tab)
 \break
 
 ## Figure Captions 
-Figure 1. Standardized densities of juvenile rockfish species collected in the CalCOFI survey, and estimates of latent trends for three candidate models, representing a range of flexibility. A B-spline model with 6 knots had slighty higher ELPD values than other smooth trend models (such as the more coarse 12 knot model) and the conventional DFA, modeled with a random walk. The posterior mean from each model is shown as a solid black line, and 95% credible intervals are shown in the grey region. 
+Figure 1. Standardized densities of juvenile shortbelly rockfish collected in the CalCOFI survey, and estimates of latent trends for three candidate models, representing a range of flexibility in splines compared to the conventional random walk. A B-spline model with 6 knots had slighty higher ELPD values than other smooth trend models (such as the more coarse 12 knot model) and the conventional DFA (random walk). The posterior mean from each model is shown as a solid black line, and 95% credible intervals are shown in the grey region. 
 
 Figure 2. Estimated trends from the 2-trend DFA model applied to commercial groundfish landings off the west coast of the United States. The model results with lowest LOOIC is shown, a model that allows trends to be approximated with B-spines (6 knots). The posterior mean for each trend is shown, with ribbons representing 95% credible intervals. 
 
@@ -158,36 +160,37 @@ Figure 4. Estimated landings for 2 species included in our analysis, with contra
 \break
 
 ```{r fig1, echo=FALSE, fig.pos="placeHere", fig.cap="Figure 01 \\label{fig:fig1}", fig.height=6}
-m = readRDS("calcofi_models.rds")
+m = readRDS("output/calcofi_models.rds")
 
 # standardize raw data
-x = readRDS("calcofi_data.rds")
+x = readRDS("output/calcofi_data.rds")
 scaled_x = group_by(x, ts) %>%
   dplyr::mutate(obs = (obs-mean(obs,na.rm=T))/sd(obs,na.rm=T))
 scaled_x$Species = c("aurora","shortbelly","bocaccio")[scaled_x$ts]
+scaled_x = dplyr::filter(scaled_x, Species=="shortbelly")
 
-fit = m[[2]]
-r = bayesdfa::rotate_trends(fit)
+pred = predicted(m[[2]])[,,,3]
+# n_mcmc / n_chains / n_years / n_ts
 trend_df1 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = c(r$trends_lower),
-  "mean"=c(r$trends_mean),
-  "hi"=c(r$trends_upper),
+  "low" = apply(pred,3,quantile,0.025),
+  "mean"=apply(pred,3,mean),
+  "hi"=apply(pred,3,quantile,0.975),
   "Model" = "B-spline, 6 knots")
 
-fit = m[[4]]
+pred = predicted(m[[4]])[,,,3]
 r = bayesdfa::rotate_trends(fit)
 trend_df2 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = c(r$trends_lower),
-  "mean"=c(r$trends_mean),
-  "hi"=c(r$trends_upper),
+  "low" = apply(pred,3,quantile,0.025),
+  "mean"=apply(pred,3,mean),
+  "hi"=apply(pred,3,quantile,0.975),
   "Model" = "B-spline, 18 knots")
 
-fit = m[[6]]
+pred = predicted(m[[1]])[,,,3]
 r = bayesdfa::rotate_trends(fit)
 trend_df3 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = c(r$trends_lower),
-  "mean"=c(r$trends_mean),
-  "hi"=c(r$trends_upper),
+  "low" = apply(pred,3,quantile,0.025),
+  "mean"=apply(pred,3,mean),
+  "hi"=apply(pred,3,quantile,0.975),
   "Model" = "Random walk")
 
 trend_df = rbind(trend_df1, trend_df2, trend_df3)
@@ -200,9 +203,12 @@ g1 = ggplot(trend_df, aes(time,mean)) +
   theme(strip.background =element_rect(fill="white")) + 
   geom_point(data=scaled_x, aes(x=time,y=obs,col=Species),alpha=0.7,size=3) +
   scale_color_manual("Species",
-    values = c("aurora" = "#440154FF", "shortbelly" = "#2A788EFF", "bocaccio" = "#7AD151FF")) +
+    values = c("shortbelly" = "#2A788EFF")) +
+  #scale_color_manual("Species",
+  #  values = c("aurora" = "#440154FF", "shortbelly" = "#2A788EFF", "bocaccio" = "#7AD151FF")) +
   ylab("Trend estimate") +
-  xlab("Year")
+  xlab("Year") + 
+  theme(legend.position = "none")
 
 print(g1)
 ```
@@ -212,7 +218,7 @@ print(g1)
 ```{r fig2, echo=FALSE, fig.pos="placeHere", fig.cap="Figure 02 \\label{fig:fig4}"}
 
 # make plots for best model
-m = readRDS("landings_spline_18.rds")
+m = readRDS("output/landings_spline_18.rds")
 r = rotate_trends(m)
 
 g1 = plot_trends(r, years = 1981:2019) + 
@@ -232,7 +238,7 @@ for(i in 1:ncol(d)) {
 
 # bring in best model
 # make plots for best model
-m = readRDS("landings_spline_18.rds")
+m = readRDS("output/landings_spline_18.rds")
 r = rotate_trends(m)
 
 loadings = as.data.frame(cbind(apply(r$Z_rot,c(2,3),mean), apply(r$Z_rot,c(2,3),sd)))
@@ -261,7 +267,7 @@ print(g1)
 
 ```{r fig4, echo=FALSE, fig.pos="placeHere", fig.cap="Figure 04 \\label{fig:fig4}"}
 
-df = readRDS("predicted_lingcod_whiting.rds")
+df = readRDS("output/predicted_lingcod_whiting.rds")
 
 # bring in raw observations
 d = read.csv("data/port_landings_table2.csv", stringsAsFactors = FALSE)

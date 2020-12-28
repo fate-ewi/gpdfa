@@ -67,8 +67,8 @@ x$ts = as.numeric(as.factor((x$ts)))
 x$obs[which(x$obs==0)]=NA
 x$obs = log(x$obs)
 
-saveRDS(x, "calcofi_data.rds")
-x = readRDS("calcofi_data.rds")
+saveRDS(x, "output/calcofi_data.rds")
+x = readRDS("output/calcofi_data.rds")
 #x$ts = as.numeric(as.factor(x$ts))
 #x$time = x$time - min(x$time) + 1
 mcmc_iter = 3000
@@ -90,6 +90,6 @@ m[[9]] = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chain
 m[[10]] = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp",n_knots=24)
 m[[11]] = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp",n_knots=30)
 
-saveRDS(m,"calcofi_models.rds")
-m = readRDS("calcofi_models.rds")
+#saveRDS(m,"calcofi_models.rds")
+m = readRDS("output/calcofi_models.rds")
 
