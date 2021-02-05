@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  3 FEB 2021 06:58
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.4.7)  5 FEB 2021 07:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -848,25 +848,25 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 4.99947pt on input line 87.
 [1
 
-] [2] [3] [4] [5] [6] [7] [8] [9] [10] [11] [12]
+] [2] [3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13]
 File: gpdfa_paper_files/figure-latex/fig1-1.pdf Graphic file (type pdf)
 <use gpdfa_paper_files/figure-latex/fig1-1.pdf>
-[13]
+[14]
 File: gpdfa_paper_files/figure-latex/fig2-1.pdf Graphic file (type pdf)
 <use gpdfa_paper_files/figure-latex/fig2-1.pdf>
-[14]
+[15]
 File: gpdfa_paper_files/figure-latex/fig3-1.pdf Graphic file (type pdf)
 <use gpdfa_paper_files/figure-latex/fig3-1.pdf>
-[15]
+[16]
 File: gpdfa_paper_files/figure-latex/fig4-1.pdf Graphic file (type pdf)
 <use gpdfa_paper_files/figure-latex/fig4-1.pdf>
-[16] [17] [18] [19]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 872.
-[20]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 872.
+[17] [18] [19] [20]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 890.
+[21]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 890.
 (./gpdfa_paper.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 872.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 872.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 890.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 890.
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -880,4 +880,4 @@ Here is how much of TeX's memory you used:
  1348 hyphenation exceptions out of 8191
  59i,7n,118p,810b,348s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on gpdfa_paper.pdf (20 pages).
+Output written on gpdfa_paper.pdf (21 pages).
