@@ -6,6 +6,7 @@ library(ggrepel)
 library(rerddap)
 library(loo)
 library(rstan)
+options(mc.cores = parallel::detectCores())
 #http://calcofi.org/publications/calcofireports/v41/Vol_41_Moser_etal.pdf
 #Species included in the study were bocaccio
 #(S. paucispinis), cowcod (S. levis), shortbelly rockfish
@@ -71,8 +72,8 @@ saveRDS(x, "output/calcofi_data.rds")
 x = readRDS("output/calcofi_data.rds")
 #x$ts = as.numeric(as.factor(x$ts))
 #x$time = x$time - min(x$time) + 1
-mcmc_iter = 3000
-mcmc_chains = 3
+mcmc_iter = 2000
+mcmc_chains = 4
 m = list()
 m[[1]] = fit_dfa(y = x, data_shape="long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1)
 
