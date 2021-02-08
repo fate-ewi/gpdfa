@@ -11,8 +11,8 @@ for (i in 1:ncol(d)) {
   d[, i] <- log(as.numeric(d[, i]))
 }
 
-mcmc_iter <- 2000
-mcmc_chains <- 4
+mcmc_iter <- 3000
+mcmc_chains <- 3
 m <- list()
 m[[1]] <- fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends = 1)
 m[[2]] <- fit_dfa(y = t(d), iter = 1000, chains = 1, num_trends = 2)
