@@ -6,3 +6,8 @@
 *.html
 *.pdf
 *.docx
+*.rds
+*.rda
+*.RData
+*.rdb
+*.rdx
