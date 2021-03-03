@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+*.log
+*.html
+*.pdf
+*.docx
+*.rds
+*.rda
+*.RData
+*.rdb
+*.rdx
