@@ -10,10 +10,10 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-x <- readRDS("calcofi_data.rds")
+x <- readRDS("output/calcofi_data.rds")
 # x$ts = as.numeric(as.factor(x$ts))
 # x$time = x$time - min(x$time) + 1
-mcmc_iter <- 3000
+mcmc_iter <- 4000
 mcmc_chains <- 3
 m <- list()
 fold_ids <- x$time - min(x$time) + 1
