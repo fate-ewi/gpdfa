@@ -25,16 +25,8 @@ x <- data.frame(
 mcmc_iter <- 4000
 mcmc_chains <- 3
 m <- list()
-num_trends <- num_trends
+num_trends <- 2
 fold_ids <- x$time - min(x$time) + 1
-
-# fit a few models to verify similarities/differences between models
-fit <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = num_trends,
-        trend_model = "spline", n_knots = 6, sample = FALSE)
-saveRDS(fit, "output/landings_bs_6_knots.rds")
-fit <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = num_trends,
-               trend_model = "gp", n_knots = 6, sample = FALSE)
-saveRDS(fit, "output/landings_gp_6_knots.rds")
 
 fit <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = num_trends, sample = FALSE)
 m[[1]] <- dfa_cv(fit, cv_method = "loocv", iter = mcmc_iter, chains = 1, fold_ids = fold_ids)
