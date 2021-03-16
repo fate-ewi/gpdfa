@@ -72,24 +72,34 @@ saveRDS(x, "output/calcofi_data.rds")
 x <- readRDS("output/calcofi_data.rds")
 # x$ts = as.numeric(as.factor(x$ts))
 # x$time = x$time - min(x$time) + 1
-mcmc_iter <- 3000
+mcmc_iter <- 4000
 mcmc_chains <- 3
 m <- list()
 m[[1]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1)
+saveRDS(m, "output/calcofi_models.rds")
 
 # fit models with varying numbers of knots in a b-spline
 m[[2]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 6)
+saveRDS(m, "output/calcofi_models.rds")
 m[[3]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 12)
+saveRDS(m, "output/calcofi_models.rds")
 m[[4]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 18)
+saveRDS(m, "output/calcofi_models.rds")
 m[[5]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 24)
+saveRDS(m, "output/calcofi_models.rds")
 m[[6]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 30)
+saveRDS(m, "output/calcofi_models.rds")
 
 # fit models with varying numbers of knots in a gp
 m[[7]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 6)
+saveRDS(m, "output/calcofi_models.rds")
 m[[8]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 12)
+saveRDS(m, "output/calcofi_models.rds")
 m[[9]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 18)
+saveRDS(m, "output/calcofi_models.rds")
 m[[10]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 24)
+saveRDS(m, "output/calcofi_models.rds")
 m[[11]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 30)
 
 saveRDS(m, "output/calcofi_models.rds")
-m <- readRDS("output/calcofi_models.rds")
+#m <- readRDS("output/calcofi_models.rds")

@@ -125,6 +125,7 @@ We used uniform knots for both types of smooth trend models, and these results w
 
 Paragraph here on similarities and differences in the models and interpretation
 A couple sentences about comparing GP / BS models, flexibility, etc. 
+- B-spline models result in predictions in any year that generally has slightly higher ELPD
 
 Because of their flexibility, applications of LOOIC or related model selection to DFA models may result in poor diagnostics. As an alternative, we implemented cross-validation in two applications to identify the model with the highest predictive accuracy. In each case, we implemented k-fold cross validation with each year of the time series held out in turn and predicted from the remaining data. Our first application of these methods to the CalCOFI juvenile rockfish dataset highlighted that models with high predictive accuracy across the full time series may not be the best for capturing variation in particular periods of interest. Between 2015 - 2019 for example, the three rockfish species in our case study experienced a pulse that was captured when DFA trends were modeled as a random walk, but not by smooth trend models (Fig. 1) - despite those models having higher predictive accuracy across the time series. Several alternative approaches to cross validation may be useful if predictions in some years are more important than others. For example, the analysis of CalCOFI data could be repeated, but the ELPD could be calculated using only the last decade as test data. A second approach would be to implement leave-future-out cross-validation, which differs from our approach in that data points are only used to predict future years, not historical values [@burkner2020a]. While none of the models included in our analysis included covariates, the cross-validation approaches described here can be extended identify predictor variables (such as environmental covariates) that result in increased predictive accuracy.
 
@@ -137,9 +138,34 @@ Because of their flexibility, applications of LOOIC or related model selection t
 Table 1. Expected log posterior density (ELPD, with standard errors in parentheses) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series. To aid in interpretation, the minimum ELPD value across models has been subtracted from each case study.
 
 ```{r table1, echo=FALSE}
+# more stable than log(sum(exp(x)))
+log_sum_exp <- function(x) {
+  max_x <- max(x)
+  max_x + log(sum(exp(x - max_x)))
+}
+
+# more stable than log(mean(exp(x)))
+log_mean_exp <- function(x) {
+  log_sum_exp(x) - log(length(x))
+}
+
+# this loop -- and one below -- are just to drop first point out
+# of calculation. this is just the way the bayesdfa code is setup -- 
+# x0 is a parameter at t = 1, but this wouldn't be necessary if t = 0
 cv_calcofi = readRDS("output/calcofi_models_cv.rds")
+for(i in 1:length(cv_calcofi)) {
+  elpds <- apply(cv_calcofi[[i]]$log_lik,2,log_sum_exp)
+  cv_calcofi[[i]]$elpd_kfold = sum(elpds[-1])
+  cv_calcofi[[i]]$se_elpd_kfold = sqrt(length(elpds[-1]) * var(elpds[-1]))
+}
 min_calcofi = min(round(unlist(lapply(cv_calcofi,getElement,3)), 2))
+
 cv_landings = readRDS("output/landings_models_cv.rds")
+for(i in 1:length(cv_landings)) {
+  elpds <- apply(cv_landings[[i]]$log_lik,2,log_sum_exp)
+  cv_landings[[i]]$elpd_kfold = sum(elpds[-1])
+  cv_landings[[i]]$se_elpd_kfold = sqrt(length(elpds[-1]) * var(elpds[-1]))
+}
 min_landings = min(round(unlist(lapply(cv_landings,getElement,3)), 2))
 
 tab = data.frame("Trend model"=c("Random walk", rep("B-spline",5), rep("Gaussian process",5)),
@@ -222,11 +248,11 @@ print(g1)
 ```{r fig2, echo=FALSE, fig.pos="placeHere", fig.cap="Figure 02 \\label{fig:fig4}"}
 
 # make plots for best model
-m = readRDS("output/landings_spline_18.rds")
+m = readRDS("output/landings_bs_24_knots.rds")
 r = rotate_trends(m)
 
 g1 = plot_trends(r, years = 1981:2019) + 
-  theme_bw()
+  theme_bw() + theme(strip.background=element_rect(fill="white"))
 print(g1)
 ```
 
@@ -242,7 +268,7 @@ for(i in 1:ncol(d)) {
 
 # bring in best model
 # make plots for best model
-m = readRDS("output/landings_spline_18.rds")
+m = readRDS("output/landings_bs_24_knots.rds")
 r = rotate_trends(m)
 
 loadings = as.data.frame(cbind(apply(r$Z_rot,c(2,3),mean), apply(r$Z_rot,c(2,3),sd)))
