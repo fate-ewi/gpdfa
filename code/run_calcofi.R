@@ -1,4 +1,3 @@
-library(bayesdfa)
 library(ggplot2)
 library(dplyr)
 library(viridis)
@@ -6,6 +5,7 @@ library(ggrepel)
 library(rerddap)
 library(loo)
 library(rstan)
+library(bayesdfa)
 options(mc.cores = parallel::detectCores())
 # http://calcofi.org/publications/calcofireports/v41/Vol_41_Moser_etal.pdf
 # Species included in the study were bocaccio
@@ -15,7 +15,9 @@ options(mc.cores = parallel::detectCores())
 calcofi_erddap <- "ERDDAP	Species
 erdCalCOFIlrvcntSDtoSI	Sebastes paucispinis
 erdCalCOFIlrvcntSDtoSI	Sebastes jordani
-erdCalCOFIlrvcntSDtoSI	Sebastes aurora"
+erdCalCOFIlrvcntSDtoSI	Sebastes diploproa
+erdCalCOFIlrvcntSDtoSI	Sebastes levis
+"
 
 calcofi <- read.table(textConnection(calcofi_erddap), header = TRUE, sep = "\t")
 
@@ -60,9 +62,9 @@ x <- group_by(df_all, scientific_name, year, quarter) %>%
   dplyr::summarize(mu = mean(larvae_10m2, na.rm = T)) %>%
   dplyr::filter(year >= 1985, quarter == 2)
 
-x <- dplyr::rename(x, ts = scientific_name, time = year, obs = mu) %>%
-  dplyr::filter(ts %in% c("Sebastes aurora", "Sebastes jordani", "Sebastes paucispinis"))
+x <- dplyr::rename(x, ts = scientific_name, time = year, obs = mu)
 x <- dplyr::select(x, -quarter)
+x = dplyr::filter(x, ts%in%c("Sebastes paucispinis","Sebastes jordani"))
 x$ts <- as.numeric(as.factor((x$ts)))
 
 x$obs[which(x$obs == 0)] <- NA
@@ -71,35 +73,49 @@ x$obs <- log(x$obs)
 saveRDS(x, "output/calcofi_data.rds")
 x <- readRDS("output/calcofi_data.rds")
 # x$ts = as.numeric(as.factor(x$ts))
-# x$time = x$time - min(x$time) + 1
+x$time = x$time - min(x$time) + 1
 mcmc_iter <- 4000
 mcmc_chains <- 3
+mcmc_thin <- 10
 m <- list()
-m[[1]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1)
-saveRDS(m, "output/calcofi_models.rds")
+loos = list()
+
+m[[1]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin, chains = mcmc_chains, num_trends = 1,par_list="all")
+loos[[1]] = loo::loo(m[[1]]$model,moment_match=TRUE)
 
 # fit models with varying numbers of knots in a b-spline
-m[[2]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 6)
-saveRDS(m, "output/calcofi_models.rds")
-m[[3]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 12)
-saveRDS(m, "output/calcofi_models.rds")
-m[[4]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 18)
-saveRDS(m, "output/calcofi_models.rds")
-m[[5]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 24)
-saveRDS(m, "output/calcofi_models.rds")
-m[[6]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 30)
-saveRDS(m, "output/calcofi_models.rds")
+m[[2]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 6,par_list="all")
+loos[[2]] = loo::loo(m[[2]]$model,moment_match=TRUE)
+
+m[[3]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 12,par_list="all")
+loos[[3]] = loo::loo(m[[3]]$model,moment_match=TRUE)
+
+m[[4]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 18,par_list="all")
+loos[[4]] = loo::loo(m[[4]]$model,moment_match=TRUE)
+
+m[[5]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 24,par_list="all")
+loos[[5]] = loo::loo(m[[5]]$model,moment_match=TRUE)
+
+m[[6]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 30,par_list="all")
+loos[[6]] = loo::loo(m[[6]]$model,moment_match=TRUE)
 
 # fit models with varying numbers of knots in a gp
-m[[7]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 6)
-saveRDS(m, "output/calcofi_models.rds")
-m[[8]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 12)
-saveRDS(m, "output/calcofi_models.rds")
-m[[9]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 18)
-saveRDS(m, "output/calcofi_models.rds")
-m[[10]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 24)
-saveRDS(m, "output/calcofi_models.rds")
-m[[11]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 30)
+m[[7]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 6, gp_theta_prior = c(5,5),par_list="all")
+loos[[7]] = loo::loo(m[[7]]$model,moment_match=TRUE)
+
+m[[8]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 12, gp_theta_prior = c(5,5),par_list="all")
+loos[[8]] = loo::loo(m[[8]]$model,moment_match=TRUE)
+
+m[[9]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 18, gp_theta_prior = c(5,5),par_list="all")
+loos[[9]] = loo::loo(m[[9]]$model,moment_match=TRUE)
+
+m[[10]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 24, gp_theta_prior = c(5,5),par_list="all")
+loos[[10]] = loo::loo(m[[10]]$model,moment_match=TRUE)
+
+m[[11]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 30, gp_theta_prior = c(5,5),par_list="all")
+loos[[11]] = loo::loo(m[[11]]$model,moment_match=TRUE)
 
 saveRDS(m, "output/calcofi_models.rds")
+saveRDS(loos, "output/calcofi_loos.rds")
+
 #m <- readRDS("output/calcofi_models.rds")
