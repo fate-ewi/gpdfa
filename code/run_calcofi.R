@@ -10,11 +10,12 @@ options(mc.cores = parallel::detectCores())
 # http://calcofi.org/publications/calcofireports/v41/Vol_41_Moser_etal.pdf
 # Species included in the study were bocaccio
 # (S. paucispinis), cowcod (S. levis), shortbelly rockfish
-# (S. jordani), aurora rockfish (S. uuvoya), and splitnose rockfish (S. diplopyou)
+# (S. jordani), aurora rockfish (S. aurora), and splitnose rockfish (S. diplopyou)
 
 calcofi_erddap <- "ERDDAP	Species
 erdCalCOFIlrvcntSDtoSI	Sebastes paucispinis
 erdCalCOFIlrvcntSDtoSI	Sebastes jordani
+erdCalCOFIlrvcntSDtoSI	Sebastes aurora
 erdCalCOFIlrvcntSDtoSI	Sebastes diploproa
 erdCalCOFIlrvcntSDtoSI	Sebastes levis
 "
@@ -64,7 +65,7 @@ x <- group_by(df_all, scientific_name, year, quarter) %>%
 
 x <- dplyr::rename(x, ts = scientific_name, time = year, obs = mu)
 x <- dplyr::select(x, -quarter)
-x = dplyr::filter(x, ts%in%c("Sebastes paucispinis","Sebastes jordani"))
+x = dplyr::filter(x, ts%in%c("Sebastes paucispinis","Sebastes jordani","Sebastes aurora"))
 x$ts <- as.numeric(as.factor((x$ts)))
 
 x$obs[which(x$obs == 0)] <- NA
