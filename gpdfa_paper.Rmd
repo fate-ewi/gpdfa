@@ -1,6 +1,6 @@
 ---
 title: Smoothed factor analysis for identifying trends in multivariate time series
-author: Eric J. Ward$^1$, Mike A. Litzow$^2$, Mary E. Hunsicker$^3$, Sean C. Anderson$^4$
+author: Eric J. Ward$^1$, Sean C. Anderson$^2$, Mary E. Hunsicker$^3$, Mike A. Litzow$^4$ 
 output:
   pdf_document:
     fig_caption: yes
@@ -32,16 +32,16 @@ library(cowplot)
 ```
 
 $^1$Conservation Biology Division, Northwest Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
-$^2$Shellfish Assessment Program, Alaska Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 301 Research Court. Kodiak , AK, 99615, USA\
+$^2$Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo, BC, V6T 6N7, Canada 
 $^3$Fish Ecology Division, Northwest Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
-$^4$Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo, BC, V6T 6N7, Canada 
+$^4$Shellfish Assessment Program, Alaska Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 301 Research Court. Kodiak , AK, 99615, USA\
 
 \break 
 
 ## Abstract
 \setlength\parindent{24pt}
 
-Ecological processes are rarely directly observable, and for most systems, variance parameters must be estimated from data. State space models have become widely used in the environmental sciences, particularly for time series data, because of their ability to simultaneously estimate multiple sources of variation (process or natural variability, and variance attributed to observations, associated with measurement and sampling errors). A common state space approach for using multivariate time series to identify underlying signals is dynamic factor analysis (DFA). The conventional DFA model is flexible in that unseen processes are modeled as random walks. Whereas this may be suitable for some situations, random walks may be too flexible for other cases. In this paper, we introduce a new class of DFA models, where latent processes are modeled as smooth functions. We highlight two alternatives to the random walk approach, using basis splines and Gaussian predictive process models. These models are applied to two long-term datasets from the west coast of the United States: (1) a 35-year dataset of juvenile rockfishes from the west coast of the United States, and (2) a 39-year dataset of fisheries catches. We compare the out-of-sample predictive accuracy of our new approaches to conventional models with cross-validation, and find that for both applications, the smooth trend models result in models with higher predictive accuracy.
+Ecological processes are rarely directly observable, and for most systems, variance parameters must be estimated from data. State space models have become widely used in the environmental sciences, particularly for time series data, because of their ability to simultaneously estimate multiple sources of variation (process or natural variability, and variance attributed to observations, associated with measurement and sampling errors). A common state space approach for using multivariate time series to identify underlying signals is dynamic factor analysis. The conventional dynamic factor analysis model is flexible in that unseen processes are modeled as random walks. Whereas this may be suitable for some situations, random walks may be too flexible for other cases. In this paper, we introduce a new class of models, where latent processes are modeled as smooth functions. We highlight two alternatives to the random walk approach, using basis splines and Gaussian predictive process models. These models are applied to two long-term datasets from the west coast of the United States: (1) a 35-year dataset of juvenile rockfishes from the west coast of the United States, and (2) a 39-year dataset of fisheries catches. Estimation and model selection is done in a Bayesian framework, with code provided as an R package. For both applications we find that the smooth trend models have higher predictive accuracy and yield more precise predictions, compared to the conventional approach.
 
 ## Key words
 Dynamic factor analysis, smooth spline, B-spline, Gaussian process, Bayesian modeling, Stan
@@ -95,7 +95,7 @@ We developed our smooth trend DFA model, extending an existing approach that imp
 ```{r echo=FALSE}
 m = readRDS("output/calcofi_models.rds")
 fit = m[[12]]
-r = bayesdfa::rotate_trends(fit)
+r = bayesdfa::rotate_trends(fit, conf_level = 0.9)
 post_means = apply(r$Z_rot,2,mean)
 post_low = apply(r$Z_rot,2,quantile,0.025)
 post_hi = apply(r$Z_rot,2,quantile,0.975)
@@ -107,36 +107,27 @@ post_hi = apply(r$Z_rot,2,quantile,0.975)
 # x_gp = apply(rstan::extract(fit_gp$model,"x")$x,3,mean)
 ```
 
-For our application of smooth dynamic factor models to the CalCOFI juvenile rockfish dataset, we found that the full rank Gaussian process DFA model had slightly lower LOOIC values compared to alternative models (Table 1), with most performing better than the conventional DFA model. Varying the number of knots for the B-spline and Gaussian process models resulted in similar predictions and data support between the two smooth trend approaches (Table 1). Varying the number of knots did allow for greater flexibility, however, allowing for more complex models to better capture recent variability in rockfish densities (Fig.~1). Trend 1 can be seen as largely capturing the variability in the timeseries of aurora rockfish, which had the loading that was largest in magnitude (`r round(post_means[1],2)`, 95% posterior interval = `r round(post_low[1],2)`--`r round(post_hi[1],2)`). Bocaccio rockfish also loaded positively on trend 1, though the effect was weaker (`r round(post_means[3],2)`, 95% posterior interval = `r round(post_low[3],2)`--`r round(post_hi[3],2)`). The loading for shortbelly rockfish was smallest in magnitude (`r round(post_means[2],2)`, 95% posterior interval = `r round(post_low[2],2)`--`r round(post_hi[2],2)`). 
+For our application of smooth dynamic factor models to the CalCOFI juvenile rockfish dataset, we found that the full rank Gaussian process DFA model had slightly lower LOOIC values compared to alternative models (Table 1), with most performing better than the conventional DFA model. Varying the number of knots for the B-spline and Gaussian process models resulted in similar predictions and data support between the two smooth trend approaches (Table 1). Varying the number of knots did allow for greater flexibility, however, allowing for more complex models to better capture recent variability in rockfish densities (Fig. 1). Trend 1 can be seen as largely capturing the variability in the timeseries of aurora rockfish, which had the loading that was largest in magnitude (`r round(post_means[1],2)`, 90% credible interval = `r round(post_low[1],2)`--`r round(post_hi[1],2)`). Bocaccio rockfish also loaded positively on trend 1, though the effect was weaker (`r round(post_means[3],2)`, 90% credible interval = `r round(post_low[3],2)`--`r round(post_hi[3],2)`). The loading for shortbelly rockfish was smallest in magnitude (`r round(post_means[2],2)`, 90% credible interval = `r round(post_low[2],2)`--`r round(post_hi[2],2)`). 
 
-When smooth-trend B-spline and Gaussian predictive process models were applied to commercial fisheries landings data, the model with the lowest LOOIC was the B-spline model with 6 knots. The first trend exhibited nearly linear change from 1981--2001 and was relatively stationary from 2001--2019 (Fig.~2). The second trend represented change from the early 1990s, with the strongest change occuring 2010--present. Estimates of the loadings from this B-spline model indicated many species or species groups loaded negatively on trend 1 (lingcod, sablefish, rockfishes), but Arrowtooth flounder and Pacific whiting had opposite loadings (Fig.~2). Trend 2 from this model appeared to contrast species with relatively stationary catches before declining in 2010 (e.g., Arrowtooth flounder, *Atheresthes stomas*) versus Petrale sole (*Eopsetta jordani*)---one of the only non-whiting species that has experienced positive catches since 2010. Predictions across all models appeared to characterize the trends of most species, although none of the approaches were able to capture the variability in Pacific whiting catches since 2000 (Fig.~3).
+When smooth-trend B-spline and Gaussian predictive process models were applied to commercial fisheries landings data, the model with the lowest LOOIC was the B-spline model with 6 knots. The first trend exhibited nearly linear change from 1981--2001 and was relatively stationary from 2001--2019 (Fig. 2). The second trend represented change from the early 1990s, with the strongest change occuring 2010--present. Estimates of the loadings from this B-spline model indicated many species or species groups loaded negatively on trend 1 (lingcod, sablefish, rockfishes), but Arrowtooth flounder and Pacific whiting had opposite loadings (Fig. 2). Trend 2 from this model appeared to contrast species with relatively stationary catches before declining in 2010 (e.g., Arrowtooth flounder, *Atheresthes stomas*) versus Petrale sole (*Eopsetta jordani*)---one of the only non-whiting species that has experienced positive catches since 2010. Predictions across all models appeared to characterize the trends of most species, and trends from the B-spline model generated more precise predictions relative to the random walk, although neither model was able to capture the variability in Pacific whiting catches since 2000 (Fig. 3).
 
-While low dimensional Gaussian process and B-spline models perform similarly (Table 1), comparing higher order models highlights an interesting contrast between these approaches. As more knots are added to the B-spline model the wiggliness of the trend lines increase, but the opposite is generally true of the Gaussian process model, with trends becoming smoother as a function of knots. 
+While low dimensional Gaussian process and B-spline models perform similarly (Table 1), comparing higher order models highlights an interesting contrast between these two smooth approaches. As more knots are added to the B-spline model of fisheries landings, the wiggliness of the estimated trends generally increases (Fig. 4). The opposite is generally true of the Gaussian process model for this application, with trends becoming smoother as more knots are added (Fig. 4). Estimates of $\theta_{k}$ for this Gaussian process model are relatively large (8.32, 4.4), allowing correlation between neighboring points to decrease slowly and neighboring points further away to have a larger effect. In contrast, the full rank Gaussian process model was most supported for the CalCOFI data -- this model had a relatively small value of $\theta_{k}$ = 1.12, allowing correlation between adjacent points to decrease rapidly, translating into greater flexibility.  
 
 ## Discussion
 
-Dynamic factor analysis (DFA) represents a flexible approach for using state space models to capture latent processes in multivariate time series [@zuur2003b; @zuur2003c]. For some ecological datasets, using a random walk to model the latent DFA trends may be overly complex. Examples of cases where random walks may overfit trends may be when there are large gaps in time between observations, or data collected from systems with high signal to noise ratios. 
+Dynamic factor analysis (DFA) represents a flexible approach for using state space models to capture latent processes in multivariate time series [@zuur2003b; @zuur2003c]. For some ecological processes -- particularly those with high variability -- random walks may be too constraining, while for others, using a random walk may be overly complex. Examples of cases where random walks may overfit trends may exist when there are large temporal gaps between observations, or data are collected from systems with high signal to noise ratios. 
 <!-- TODO: SA: reverse? -->
 As alternatives to the conventional random walk, we illustrate how DFA trends may be modeled using Gaussian process models or B-splines. Both of these alternatives are flexible in that their smoothness may be specified a priori by the user, and compared via model selection. As the variability of latent trends is nearly always fixed in a conventional DFA for identifiability [@zuur2003b; @holmes2012b], adopting an alternative model of the trend does not limit inference or change the meaning of other parameters (e.g., loadings). 
 
-In both of our case studies comparing smooth DFA models to conventional ones, we found that using smooth functions to model DFA trends resulted in models with higher predictive ability (compared with out of sample cross-validation). Models that used B-splines to model trends received the highest support in both applications, and that these models had better predictive ability than Gaussian predictive process models. In our evaluation of 1-trend DFA models to the CalCOFI juvenile rockfish dataset, varying the number of knots ($> 6$) had little effect on predictive performance. While these trends are relatively stationary and may be explained by simpler models, the insensitivity of predictive accuracy to more complex models may also be driven by the inability of all models to predict extreme deviations (Figure 1).
+In both of our case studies comparing smooth DFA models to conventional ones, we found that using smooth functions to model DFA trends resulted in models with higher predictive ability (as measured with LOOIC). Our two case studies contrast two datasets with different degrees of variability. The CalCOFI dataset on juvenile rockfish abundance represents data with relatively high variability -- both because of the sampling process, and because the nature of fish recruitment is stochastic. In comparing conventional 1-trend DFA versus smooth trend DFA models to the CalCOFI data, the conventional random walk had difficulty in capturing extremes (Fig. 1), while the B-spline and Gaussian process models generally did better (Table 1). Our second example consisted of applying DFA models to time series of fisheries catches; this data is generally less variable than the CalCOFI data because catches are aggregated across space and individual vessels. Like the CalCOFI example, we found that smooth trend DFA models were better supported over the conventional random walk, however the models receiving the most support were lower dimension models (e.g. B-spline with 6 knots, Table 1). For both of our case studies knot locations were assigned uniformly, and these results would be expected to change slightly if the knot locations were adjusted. For models with missing data, or datasets with unevenly distributed replicate samples, it may be important to consider non-uniform knot vectors. 
 
-We used uniform knots for both types of smooth trend models, and these results would be expected to change slightly if the knot locations were adjusted. For models with missing data, or datasets with unevenly distributed replicate samples, it may be important to consider non-uniform knot vectors. 
-
-Paragraph here on similarities and differences in the models and interpretation
-A couple sentences about comparing GP / BS models, flexibility, etc. 
-- B-spline models result in predictions in any year that generally has slightly higher ELPD
-
-Because of their flexibility, applications of LOOIC or related model selection to DFA models may result in poor diagnostics. As an alternative, we implemented cross-validation in two applications to identify the model with the highest predictive accuracy. In each case, we implemented k-fold cross validation with each year of the time series held out in turn and predicted from the remaining data. Our first application of these methods to the CalCOFI juvenile rockfish dataset highlighted that models with high predictive accuracy across the full time series may not be the best for capturing variation in particular periods of interest. Between 2015 - 2019 for example, the three rockfish species in our case study experienced a pulse that was captured when DFA trends were modeled as a random walk, but not by smooth trend models (Fig. 1) - despite those models having higher predictive accuracy across the time series. Several alternative approaches to cross validation may be useful if predictions in some years are more important than others. For example, the analysis of CalCOFI data could be repeated, but the ELPD could be calculated using only the last decade as test data. A second approach would be to implement leave-future-out cross-validation, which differs from our approach in that data points are only used to predict future years, not historical values [@burkner2020a]. While none of the models included in our analysis included covariates, the cross-validation approaches described here can be extended identify predictor variables (such as environmental covariates) that result in increased predictive accuracy.
-
-## Acknowledgments
-Work for this project was supported by a NOAA Fisheries and the Environment (FATE) grant led by Mary Hunsicker and Mike Litzow.
+Because of their flexibility, applications of LOOIC or related model selection tools to state-space models, including the DFA models in our analysis, may result in poor diagnostics (e.g. high Pareto-k statistics). Though not explored here, alternative approaches for evaluating predictive performance may be used, including the expected log posterior density (ELPD) [@vehtari2017; @vehtari2020]. Rather than performing parameter estimation once per model, as was done in our analysis, calculating ELPD is more computationally challenging because with cross-validation, a model must be fit once per fold. With this added cost comes new opportunities, in that cross validation methods specific to time series data may be more easily applied. Commonly used approximations like LOOIC represent an approximation to cross validation where each data point is held out in turn. An alternative approach for time series data is that the observations in each time step can be treated as a fold, and held out in turn. Extensions of this time series approach include leave-future-out cross-validation, where data points are only used to predict future observations, not historical ones [@burkner2020a]. While the specific tool used to assess model performance may be tailored to the research questions being addressed, the types of flexible trend models included in our analysis represent a robust approach for DFA that may also be considered in hindcasting or forecasting scenarios. 
 
 \break
 
 ## Tables 
 
-Table 1. Approximate Leave One Out Information Criterion (LOOIC, with standard errors in parentheses) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series. To aid in interpretation, the maximum LOOIC value across models has been subtracted from each case study.
+Table 1. Approximate Leave One Out Information Criterion (LOOIC, with standard errors in parentheses) for each of the models applied to our cases studies (CalCOFI time series of juvenile rockfishes, and the time series of commercial groundfish landings from the west coast of the USA). The B-spline models are generated with basis splines, and the Gaussian predictive process models are generated using a Gaussian covariance function. For each model, knots (or locations of control points) are assumed to be uniformly spaced over the time series. To aid in interpretation, the minimum LOOIC value across models has been subtracted from each case study.
 
 ```{r table1, echo=FALSE}
 
@@ -160,11 +151,13 @@ knitr::kable(tab)
 \break
 
 ## Figure Captions 
-Figure 1. Standardized densities of juvenile shortbelly rockfish collected in the CalCOFI survey, and estimates of latent trends for three candidate models, representing a range of flexibility in splines compared to the conventional random walk. In addition to the conventional DFA model with a latent random walk, predictions from a B-spline model with 12 knots and 24 knots are shown. The posterior mean from each model is shown as a solid line, and 95% credible intervals are shown in the shaded region. 
+Figure 1. Standardized densities of juvenile shortbelly rockfish collected in the CalCOFI survey, and estimates of latent trends for three candidate models, representing a range of flexibility in splines compared to the conventional random walk. In addition to the conventional DFA model with a latent random walk (included in all panels for reference), predictions from a full rank Gaussian process model, and B-spline model with 12 knots and 24 knots are shown. The posterior mean from each model is shown as a solid line, and 90% credible intervals are shown with ribbons. 
 
-Figure 2. Estimated trends and loadings from the 2-trend DFA model applied to commercial groundfish landings off the west coast of the United States. The model results with highest LOOIC is shown, a model that allows trends to be approximated with B-spines (6 knots). The posterior mean for each trend is shown, with ribbons representing 95% credible intervals. The loadings of each species on each trend are shown as points, with lines representing 95% credible intervals. 
+Figure 2. Estimated trends and loadings from the 2-trend DFA model applied to commercial groundfish landings off the west coast of the United States. The model results with highest LOOIC is shown, a model that allows trends to be approximated with B-spines (6 knots). The posterior mean for each trend is shown, with ribbons representing 90% credible intervals. The loadings of each species on each trend are shown as points, with lines representing 90% credible intervals. 
 
-Figure 3. Estimated landings for 2 species included in our analysis, with contrasting trends (lingcod, Pacific whiting). Posterior means and 95% credible intervals (ribbons) for two candidate models are shown: a B-spline trend model with 6 knots, and a random walk model representing the conventional DFA.
+Figure 3. Estimated landings for 2 species included in our analysis, with contrasting trends (lingcod, Pacific whiting). Posterior means and 90% credible intervals (ribbons) for two candidate models are shown: a B-spline trend model with 6 knots, and a random walk model representing the conventional DFA.
+
+Figure 4. Estimated trends for the 2-trend model of fisheries landings on the west coast of the USA. Shown are results for the B-spline and Gaussian process models with 6 and 18 knots (or control points). Solid lines represent the posterior means and 90% credible intervals are shown as ribbons.
 
 \break  
   
@@ -177,45 +170,62 @@ scaled_x = group_by(x, ts) %>%
   dplyr::mutate(obs = (obs-mean(obs,na.rm=T))/sd(obs,na.rm=T))
 scaled_x$Species = c("aurora","shortbelly","bocaccio")[scaled_x$ts]
 scaled_x = dplyr::filter(scaled_x, Species=="shortbelly")
+scaled_x$Model = NA
 
 # predictions from RW model
 pred = predicted(m[[1]])[,,,3]
 # n_mcmc / n_chains / n_years / n_ts
 trend_df1 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = apply(pred,3,quantile,0.025),
+  "low" = apply(pred,3,quantile,0.05),
   "mean"=apply(pred,3,mean),
-  "hi"=apply(pred,3,quantile,0.975),
+  "hi"=apply(pred,3,quantile,0.95),
   "Model" = "Random walk")
 
 pred = predicted(m[[3]])[,,,3]
 trend_df3 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = apply(pred,3,quantile,0.025),
+  "low" = apply(pred,3,quantile,0.05),
   "mean"=apply(pred,3,mean),
-  "hi"=apply(pred,3,quantile,0.975),
-  "Model" = "B-spline (n=12)")
+  "hi"=apply(pred,3,quantile,0.95),
+  "Model" = "Smooth trend")
+trend_df3 = rbind(trend_df3, trend_df1)
+trend_df3$group = "B-spline (n=12)"
 
 # predictions from GP model
 pred = predicted(m[[5]])[,,,3]
 trend_df2 = data.frame("time"= seq(min(x$time),max(x$time)),
-  "low" = apply(pred,3,quantile,0.025),
+  "low" = apply(pred,3,quantile,0.05),
   "mean"=apply(pred,3,mean),
-  "hi"=apply(pred,3,quantile,0.975),
-  "Model" = "B-spline (n=24)")
+  "hi"=apply(pred,3,quantile,0.95),
+  "Model" = "Smooth trend")
+trend_df2 = rbind(trend_df2, trend_df1)
+trend_df2$group = "B-spline (n=24)"
 
-trend_df = rbind(trend_df1, trend_df2, trend_df3)
+# predictions from GP model
+pred = predicted(m[[12]])[,,,3]
+trend_df4 = data.frame("time"= seq(min(x$time),max(x$time)),
+  "low" = apply(pred,3,quantile,0.05),
+  "mean"=apply(pred,3,mean),
+  "hi"=apply(pred,3,quantile,0.95),
+  "Model" = "Smooth trend")
+trend_df4 = rbind(trend_df4, trend_df1)
+trend_df4$group = "Gaussian process (full rank)"
 
-g1 = ggplot(trend_df, aes(time,mean)) +
-  geom_ribbon(aes(ymin=low,ymax=hi),alpha=0.4, fill="darkblue") +
-  geom_line(col="darkblue") +
+trend_df = rbind(trend_df2, trend_df3, trend_df4)
+
+g1 = ggplot(trend_df, aes(time,mean,group=Model,fill=Model,col=Model)) +
+  geom_ribbon(aes(ymin=low,ymax=hi),alpha=0.3,col=NA) +
+  geom_line() +
   theme_sleek() +
-  facet_wrap(~Model, nrow=3, scale="free_y") + 
+  facet_wrap(~group, nrow=3, scale="free_y") + 
   theme(strip.background =element_rect(fill="white")) + 
-  geom_point(data=scaled_x, aes(x=time,y=obs),alpha=0.7,size=3,col="grey30") +
+  geom_point(data=scaled_x, aes(x=time,y=obs,group=NA),alpha=0.7,size=3,col="grey30") +
+    scale_color_manual(values = c("blue","red")) + 
+  scale_fill_manual(values = c("blue","red")) + 
   #scale_color_manual("Species",
   #  values = c("aurora" = "#440154FF", "shortbelly" = "#2A788EFF", "bocaccio" = "#7AD151FF")) +
   ylab("Standardized densities and trend") +
   xlab("Year") + 
-  theme(legend.position = "none")
+  theme(strip.text.x = element_text(size = 12))
 
 print(g1)
 ```
@@ -226,7 +236,7 @@ print(g1)
 ```{r fig2, echo=FALSE, fig.cap="", fig.height=7, fig.pos="placeHere"}
   # make plots for best model
   m = readRDS("output/landings_models.rds")
-  rotated = rotate_trends(m[[2]])
+  rotated = rotate_trends(m[[2]], conf_level = 0.9)
 
   n_ts <- dim(rotated$Z_rot)[2]
   n_trends <- dim(rotated$Z_rot)[3]
@@ -243,13 +253,14 @@ print(g1)
 
   # make faceted ribbon plot of trends
   p1 <- ggplot(df, aes_string(x = "time", y = "x")) +
-    geom_ribbon(aes_string(ymin = "lo", ymax = "hi"), alpha = 0.4, fill="darkblue") +
+    geom_ribbon(aes_string(ymin = "lo", ymax = "hi"), alpha = 0.4, fill="blue") +
     geom_line(col="darkblue") + 
     facet_wrap("trend",nrow=2,scale="free_y") +
     xlab("Time") + 
     ylab("Trend") + 
     theme_sleek() +
-    theme(strip.background =element_rect(fill="white"))
+    theme(strip.background =element_rect(fill="white")) + 
+    theme(strip.text.x = element_text(size = 12))
   
 # bring in raw data
 d = read.csv("data/port_landings_table2.csv", stringsAsFactors = FALSE)
@@ -270,7 +281,7 @@ loadings$species = names(d)
 p2 = ggplot(dplyr::filter(loadings, species!="Misc roundfish",species!="Misc flatfish",species!="Misc groundfish"),
   aes(Trend1_mean,Trend2_mean,label=species)) +
   geom_point(col="darkblue") +
-  geom_errorbar(aes(ymin=Trend2_mean - Trend2_sd,ymax=Trend2_mean + Trend2_sd),col="darkblue",alpha=0.3) +
+  geom_errorbar(aes(ymin=Trend2_mean - Trend2_sd,ymax=Trend2_mean + Trend2_sd),col="blue",alpha=0.3) +
   geom_errorbarh(aes(xmin=Trend1_mean - Trend1_sd,xmax=Trend1_mean + Trend1_sd),col="darkblue",alpha=0.3) +
   geom_text_repel(size=5,col="dark blue") +
   theme_sleek() +
@@ -328,11 +339,14 @@ g1 = ggplot(df, aes(year, pred, group=Model, col=Model,fill=Model)) +
   theme_sleek() +
   xlab("") +
   ylab("Standardized landings (mt)") +
-  scale_fill_viridis(end=0.8, discrete = TRUE) +
-  scale_color_viridis(end=0.8, discrete = TRUE) +
+  scale_color_manual(values = c("red","blue")) + 
+  scale_fill_manual(values = c("red","blue")) + 
+  #scale_fill_viridis(end=0.8, discrete = TRUE) +
+  #scale_color_viridis(end=0.8, discrete = TRUE) +
   facet_wrap(~ Species, nrow=2) +
   theme(strip.background =element_rect(fill="white")) +
-  geom_point(data=obs, aes(year, y),size=2, col="grey30",alpha=0.5)
+  geom_point(data=obs, aes(year, y),size=2, col="grey30",alpha=0.5) + 
+  theme(strip.text.x = element_text(size = 12))
 
 print(g1)
 ```
@@ -343,37 +357,67 @@ print(g1)
   m = readRDS("output/landings_models.rds")
   # make plot of trends as a function of knots
   
-  # 18 trend B-spline
-  r = rotate_trends(m[[4]])
+  # 18 knot B-spline
+  r = rotate_trends(m[[4]], conf_level = 0.9)
   bs_1 = data.frame("knots"=18,
-                    "trend"="Trend 1",
+                    "trend"="Trend 1 (n=18)",
                   "mean"=r$trends_mean[1,],
                   "lo"=r$trends_lower[1,],
                   "hi"=r$trends_upper[1,],
                   "year"=1981:2019)  
   bs_2 = data.frame("knots"=18,
-                    "trend"="Trend 2",
+                    "trend"="Trend 2 (n=18)",
                   "mean"=r$trends_mean[2,],
                   "lo"=r$trends_lower[2,],
                   "hi"=r$trends_upper[2,],
                   "year"=1981:2019)  
-  bs = rbind(bs_1,bs_2)
+  # 6 knot B-spline
+  r = rotate_trends(m[[2]], conf_level = 0.9)
+  bs_3 = data.frame("knots"=6,
+                    "trend"="Trend 1 (n=6)",
+                  "mean"=r$trends_mean[1,],
+                  "lo"=r$trends_lower[1,],
+                  "hi"=r$trends_upper[1,],
+                  "year"=1981:2019)  
+  bs_4 = data.frame("knots"=18,
+                    "trend"="Trend 2 (n=6)",
+                  "mean"=r$trends_mean[2,],
+                  "lo"=r$trends_lower[2,],
+                  "hi"=r$trends_upper[2,],
+                  "year"=1981:2019)  
   
-  # 18 trend B-spline
-  r = rotate_trends(m[[7]])
+  
+  # 18 knot B-spline
+  r = rotate_trends(m[[9]], conf_level = 0.9)
   gp_1 = data.frame("knots"=18,
-                    "trend"="Trend 1",
+                    "trend"="Trend 1 (n=18)",
                   "mean"=r$trends_mean[1,],
                   "lo"=r$trends_lower[1,],
                   "hi"=r$trends_upper[1,],
                   "year"=1981:2019)  
   gp_2 = data.frame("knots"=18,
-                    "trend"="Trend 2",
+                    "trend"="Trend 2 (n=18)",
                   "mean"=r$trends_mean[2,],
                   "lo"=r$trends_lower[2,],
                   "hi"=r$trends_upper[2,],
+                  "year"=1981:2019) 
+  # 6 knot B-spline
+  r = rotate_trends(m[[7]], conf_level = 0.9)
+  gp_3 = data.frame("knots"=6,
+                    "trend"="Trend 1 (n=6)",
+                  "mean"=r$trends_mean[1,],
+                  "lo"=r$trends_lower[1,],
+                  "hi"=r$trends_upper[1,],
                   "year"=1981:2019)  
-  gp = rbind(gp_1,gp_2)
+  gp_4 = data.frame("knots"=6,
+                    "trend"="Trend 2 (n=6)",
+                  "mean"=r$trends_mean[2,],
+                  "lo"=r$trends_lower[2,],
+                  "hi"=r$trends_upper[2,],
+                  "year"=1981:2019) 
+  
+  bs = rbind(bs_3, bs_4, bs_1, bs_2)
+  gp = rbind(gp_3, gp_4, gp_1, gp_2)
   
   bs$model = "B-spline"
   gp$model = "Gaussian process"
@@ -381,14 +425,19 @@ print(g1)
   df = rbind(bs,gp)
   df$model = as.factor(df$model)
   
+  df$trend = factor(df$trend, levels = c("Trend 1 (n=6)", "Trend 1 (n=18)",
+                                            "Trend 2 (n=6)", "Trend 2 (n=18)"))
   p1 = ggplot(df, aes(year, mean, col=model,fill=model)) + 
-    geom_ribbon(aes(ymin=lo,ymax=hi,fill=model)) + 
+    geom_ribbon(aes(ymin=lo,ymax=hi,fill=model),alpha=0.3,col=NA) + 
     geom_line() +     
-    facet_wrap(~ trend, scale="free_y", nrow=2) +
+    facet_wrap(~ trend, scale="free_y") +
     theme_sleek() + 
-    scale_color_viridis(discrete = TRUE,end=0.8,alpha=0.4) + 
-    scale_fill_viridis(discrete = TRUE,end=0.8,alpha=0.4) + 
-    theme(strip.background =element_rect(fill="white"))
+    xlab("") + 
+    ylab("") + 
+    scale_color_manual(values = c("red","blue")) + 
+    scale_fill_manual(values = c("red","blue")) + 
+    theme(strip.background =element_rect(fill="white")) + 
+    theme(strip.text.x = element_text(size = 12))
   print(p1)
 ```
 
