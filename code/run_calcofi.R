@@ -116,6 +116,9 @@ loos[[10]] = loo::loo(m[[10]]$model,moment_match=TRUE)
 m[[11]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = 30, gp_theta_prior = c(5,5),par_list="all")
 loos[[11]] = loo::loo(m[[11]]$model,moment_match=TRUE)
 
+m[[12]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = max(x$time), gp_theta_prior = c(5,5),par_list="all")
+loos[[12]] = loo::loo(m[[12]]$model,moment_match=TRUE)
+
 saveRDS(m, "output/calcofi_models.rds")
 saveRDS(loos, "output/calcofi_loos.rds")
 

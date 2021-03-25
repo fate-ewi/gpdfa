@@ -16,6 +16,8 @@ mcmc_iter <- 4000
 mcmc_chains <- 3
 thin <- 10
 m <- list()
+loos <- list()
+
 m[[1]] <- fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, num_trends = 2,par_list="all")
 loos[[1]] = loo::loo(m[[1]]$model,moment_match=TRUE)
 saveRDS(loos, "output/landings_loos.rds")
@@ -67,3 +69,7 @@ loos[[11]] = loo::loo(m[[11]]$model,moment_match=TRUE)
 saveRDS(loos, "output/landings_loos.rds")
 saveRDS(m,"output/landings_models.rds")
 
+m[[12]] <- fit_dfa(y = t(d), iter = mcmc_iter, chains = mcmc_chains, thin = thin, num_trends = 2, trend_model = "gp", n_knots = 39,par_list="all")
+loos[[12]] = loo::loo(m[[12]]$model,moment_match=TRUE)
+saveRDS(loos, "output/landings_loos.rds")
+saveRDS(m,"output/landings_models.rds")
