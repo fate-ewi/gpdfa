@@ -126,7 +126,7 @@ Because of their flexibility, applications of LOOIC or related model selection t
 
 There are a number of possible extensions to the smooth-function DFA models described in this paper.
 One extension would be to penalize the wiggliness of the B-spline basis functions, resulting in P-splines [@eilers1996; @mgcvbook].
-This would reduce the impact of the choice of number of B-spline basis functions on model fit [@mgcvbook].
+This would reduce the impact of the number of B-spline basis functions on model fit [@mgcvbook].
 Another extension would be to further constrain the wiggliness defined by the Gaussian process rate of correlation decay ($\theta$) via a prior such as the penalized complexity (PC) prior [@simpson2017]. 
 Such a prior which would allow one to more easily impart prior beliefs about the parameter scale.
 Third, the smooth trends could themselves be hierarchical: the trends could share their wiggliness, draw wiggliness parameters from a shared distribution, or share a global smoother combined with group-specific smoothers [@pedersen2019].
