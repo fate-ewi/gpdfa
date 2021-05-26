@@ -32,7 +32,7 @@ library(cowplot)
 ```
 
 $^1$Conservation Biology Division, Northwest Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
-$^2$Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo, BC, V6T 6N7, Canada 
+$^2$Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo, BC, V6T 6N7, Canada  
 $^3$Fish Ecology Division, Northwest Fisheries Science Center, National Marine Fisheries Service,  
 National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
 $^4$Shellfish Assessment Program, Alaska Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 301 Research Court. Kodiak, AK, 99615, USA\
