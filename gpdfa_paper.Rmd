@@ -10,13 +10,12 @@ output:
   word_document: default
   html_document: default
   bookdown::pdf_document2:
-csl: ecology.csl
+csl: mee.csl
 bibliography: gpdfa.bib
 ---
 
-<!-- Submissions may contain up to 20 manuscript pages. Statistical Reports mansucripts must conform to a strict page limit and format. The manuscript text (including the Abstract), literature cited, figure captions, and table captions/notes/footnotes must be double-spaced in 12-point Times New Roman font. The abstract can have a maximum of 200 words. -->
+Running head: Smooth DFA for multivariate trend analysis
 
-<!-- The parts of the manuscript should be assembled in this order: title page, abstract (on a new page), key words, text, acknowledgments, literature cited, tables (starting on a new page, one table per page, the caption should be included with the table), figure captions (on separate page preceding the first figure; captions should follow each other continuously and not on separate pages), figures (one figure per page; label each figure, i.e., Figure 1, Figure 2, etc.), and lastly any Appendices/Supporting Information (with each Appendix presented in separate files). -->
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60), warning = FALSE, message = FALSE)
 library(bayesdfa)
@@ -32,19 +31,26 @@ library(cowplot)
 ```
 
 $^1$Conservation Biology Division, Northwest Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
+email: eric.ward@noaa.gov  
 $^2$Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo, BC, V6T 6N7, Canada  
 $^3$Fish Ecology Division, Northwest Fisheries Science Center, National Marine Fisheries Service,  
 National Oceanic and Atmospheric Administration, 2725 Montlake Blvd E, Seattle WA, 98112, USA\
 $^4$Shellfish Assessment Program, Alaska Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, 301 Research Court. Kodiak, AK, 99615, USA\
   
-Open Research Statement: Code to replicate these analyses is in our repository (https://github.com/fate-ewi/gpdfa) and as an R package on CRAN, (https://cran.r-project.org/web/packages/bayesdfa/index.html). All data analyzed are previously published, but also included in our repository.   
+<!-- Open Research Statement: Code to replicate these analyses is in our repository (https://github.com/fate-ewi/gpdfa) and as an R package on CRAN, (https://cran.r-project.org/web/packages/bayesdfa/index.html). All data analyzed are previously published, but also included in our repository.    -->
 
 \break 
 
 ## Abstract
 \setlength\parindent{24pt}
 
-Ecological processes are rarely directly observable, and for most systems, variance parameters must be estimated from data. State space models have become widely used in the environmental sciences, particularly for time series data, because of their ability to simultaneously estimate multiple sources of variation (process or natural variability, and variance attributed to observations, associated with measurement and sampling errors). A common state space approach for using multivariate time series to identify underlying signals is dynamic factor analysis (DFA). The conventional DFA model is flexible in that unseen processes are modeled as random walks. Whereas this may be suitable for some situations, random walks may be too flexible for other cases. In this paper, we introduce a new class of models, where latent processes are modeled as smooth functions. We highlight two alternatives to the random walk approach, using basis splines and Gaussian predictive process models. These models are applied to two long-term datasets from the west coast of the United States: (1) a 35-year dataset of juvenile rockfishes from the west coast of the United States, and (2) a 39-year dataset of fisheries catches. Estimation and model selection is done in a Bayesian framework, with code provided as the bayesdfa R package. For both applications we find that the smooth trend models have higher predictive accuracy and yield more precise predictions, compared to the conventional approach.
+1. Ecological processes are rarely directly observable, and inference often relies on estimating hidden or latent processes. State space models have become widely used for this task, because of their ability to simultaneously estimate multiple sources of variation (natural variability, and variance attributed to observation errors). For multivariate time series, a second aim is dimension reduction, or estimating a number of latent processes that is smaller than the number of observed time series. 
+
+2. Dynamic factor analysis (DFA) has been used for performing time series dimension reduction, where latent processes are modeled as random walks. Whereas this may be suitable for some situations, random walks may be too flexible for other cases. Here, we introduce a new class of models, where latent processes are modeled as smooth functions (basis splines, Gaussian process models). We apply conventional models and our smooth trend models to two long-term datasets from the west coast of the United States: (1) a 35-year dataset of juvenile rockfishes, and (2) a 39-year dataset of fisheries catches
+
+3. Using a Bayesian framework for estimation and model selection in our bayesdfa R package, we find that for both applications, the smooth trend models have higher predictive accuracy and yield more precise predictions, compared to the conventional approach.  
+
+4. The smooth trend factor models introduced here offer a new approach for state space dimension reduction of multivariate time series. These methods may be particularly useful for data that are clumped in time, or datasets with high signal to noise ratios. These Bayesian models are flexible, and extendable to other classes of splines, including hierarchical or penalized models. 
 
 ## Key words
 Dynamic factor analysis, smooth spline, B-spline, Gaussian process, Bayesian modeling, Stan
@@ -61,7 +67,7 @@ Challenges posed by univariate time-series models also apply to multivariate mod
 
 Many statistical approaches have been proposed in recent years for clustering or estimating common signals in multivariate time series [@liao2005]. Examples include clustering based on similarities among time series features [@sarda-espinosa2019], identifying common patterns in the frequency domain [@holan2018], and clustering based on neural networks [@cherif2011]. Application of these methods to ecological data has been limited, in part because many of these approaches identify clusters from raw data and ignore observation error. An alternative approach that has been used in ecology to map collections of multivariate time series to latent processes, while accounting for observation error, is dynamic factor analysis (DFA) [@zuur2003b; @zuur2003c]. DFA is an extension of factor analysis for time series data, and estimates a small number of unobserved processes ("trends"), that can describe observed data. Mapping time series to trends is done via estimated factor loadings---these allow each time series to be modeled as a mixture of estimated latent trends, rather than assigning each time series to a single trend.
 
-To date, applications of DFA models in ecology and other fields have assumed that underlying trends are modeled as a random walk, $x_{t+1}=x_{t}+\epsilon_t$. The objective of this paper is to introduce a new class of DFA models based on smooth functions, instead of autoregressive processes. Recent work has highlighted the application of hierarchical GAMs for multiple data sources [@pedersen2019]. These approaches are flexible and likely to provide similar inference to DFA for a single latent trend; however, these methods have not been extended to include more than one process. We illustrate two options for modeling smooth functions for latent trends: basis splines ('B-splines') and Gaussian process models. We compare both approaches to conventional autoregressive DFA models for two datasets on marine fishes from the west coast of the USA. All data and code for replicating our analysis are available on Github (*https://github.com/fate-ewi/gpdfa*), and in our existing R package 'bayesdfa' [@ward2019].
+To date, applications of DFA models in ecology and other fields have assumed that underlying trends are modeled as a random walk, $x_{t+1}=x_{t}+\epsilon_t$. The objective of this paper is to introduce a new class of DFA models based on smooth functions, instead of autoregressive processes. Recent work has highlighted the application of hierarchical GAMs for multiple data sources [@pedersen2019]. These approaches are flexible and likely to provide similar inference to DFA for a single latent trend; however, these methods have not been extended to include more than one process. We illustrate two options for modeling smooth functions for latent trends: basis splines ('B-splines') and Gaussian process models. We compare both approaches to conventional autoregressive DFA models for two datasets on marine fishes from the west coast of the USA. All data and code for replicating our analysis are available on Github (*https://github.com/fate-ewi/gpdfa*) and Zenodo (*http://doi.org/10.5281/zenodo.4891992*), and in our existing R package 'bayesdfa' [@ward2019].
 
 ## Methods
 
@@ -133,6 +139,10 @@ Another extension would be to further constrain the wiggliness defined by the Ga
 Such a prior which would allow one to more easily impart prior beliefs about the parameter scale.
 Third, the smooth trends could themselves be hierarchical: the trends could share their wiggliness, draw wiggliness parameters from a shared distribution, or share a global smoother combined with group-specific smoothers [@pedersen2019].
 While these and other developments would further enhance the flexibility of the approach, the trend models included in our analysis already represent a robust approach for DFA that may also be considered in hindcasting or forecasting scenarios.
+
+## Author contributions  
+
+MH and ML secured funding for the initial development of the bayesdfa package and related publications. EW and SA did the majority of the code development, though all authors were involved in testing and simulation. EW and SA wrote the initial draft of the manuscript, with all authors providing critical edits and comments on figures. All authors reviewed the final draft and gave approval for publication.
 
 \break
 
