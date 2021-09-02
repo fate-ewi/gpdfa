@@ -1,0 +1,129 @@
+---
+title: Supplemental information for smoothed dynamic factor analysis for identifying trends in multivariate time series
+author: Eric J. Ward$^1$, Sean C. Anderson$^2$, Mary E. Hunsicker$^3$, Mike A. Litzow$^4$ 
+output:
+  pdf_document:
+    fig_caption: yes
+    latex_engine: xelatex
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60), warning = FALSE, message = FALSE)
+library(bayesdfa)
+library(knitr)
+library(tidyverse)
+library(ggsidekick)
+library(ggrepel)
+library(viridis)
+library(gridExtra)
+library(rstan)
+library(ggrepel)
+library(cowplot)
+```
+
+\break  
+  
+```{r fig1, echo=FALSE, fig.cap="Model predictions (95% CIs, grey ribbon), posterior estimates (solid lines) and observations (red points) for each of the species in our analysis of CalCOFI data. Results for three models are shown: the conventional random walk (RW), and two full rank B-spline and Gaussian process models (30 knots each).", fig.height=7, fig.pos="placeHere"}
+m = readRDS("output/calcofi_models.rds")
+
+# standardize raw data
+x = readRDS("output/calcofi_data.rds")
+scaled_x = group_by(x, ts) %>%
+  dplyr::mutate(obs = (obs-mean(obs,na.rm=T))/sd(obs,na.rm=T))
+scaled_x$Species = c("aurora","shortbelly","bocaccio")[scaled_x$ts]
+scaled_x = dplyr::filter(scaled_x, Species=="shortbelly")
+scaled_x$Model = NA
+
+# predictions from RW model
+fit1 = dfa_fitted(m[[1]])
+fit1$Model = "RW"
+
+fit6 = dfa_fitted(m[[6]])
+fit6$Model = "BS (n=30)"
+
+fit12 = dfa_fitted(m[[12]])
+fit12$Model = "GP (n=30)"
+
+fit = rbind(fit1,fit6,fit12)
+fit$Species = c("S. aurora","S. jordani", "S. paucispinis")[fit$ID]
+fit$year = seq(1985,2018)[fit$time]
+
+g1 = ggplot(fit, aes(year, estimate)) + 
+  geom_ribbon(aes(ymin=lower,ymax=upper),alpha=0.2) + 
+  geom_line() + 
+  geom_point(aes(year, y),col="red",alpha=0.3) + 
+  theme_bw() + 
+  facet_wrap(~ Species + Model, scale="free_y") + 
+  xlab("") + ylab("Estimate") + 
+  theme(strip.background =element_rect(fill="white"))
+
+print(g1)
+```
+
+\break   
+  
+  
+```{r fig2, echo=FALSE, fig.cap="Model predictions (95% CIs, grey ribbon), posterior estimates (solid lines) and observations (red points) for each of the species in our analysis of USA west coast commercial landings data. Results are shown for the conventional random walk (RW) model.", fig.height=7, fig.pos="placeHere"}
+  # make plots for best model
+  m = readRDS("output/landings_models.rds")
+
+# predictions from RW model
+fit1 = dfa_fitted(m[[1]])
+fit1$Model = "RW"
+
+fit2 = dfa_fitted(m[[2]])
+fit2$Model = "BS (n=6)"
+
+fit7 = dfa_fitted(m[[7]])
+fit7$Model = "GP (n=6)"
+
+fit = rbind(fit1,fit2)
+
+d <- read.csv("data/port_landings_table2.csv", stringsAsFactors = FALSE)
+d <- select(d, -Year)
+for (i in 1:ncol(d)) {
+  d[, i] <- log(as.numeric(d[, i]))
+}
+
+spp_names = names(d)
+spp_names[which(spp_names == "P..Whiting")] = "P. whiting"
+spp_names[which(spp_names == "P..Cod")] = "P. cod"
+spp_names[which(spp_names == "Other.Roundfish")] = "Misc. roundfish"
+spp_names[which(spp_names == "Arrowtooth.Flounder")] = "Arrowtooth flounder"
+spp_names[which(spp_names == "Dover.Sole")] = "Dover sole"
+spp_names[which(spp_names == "English.Sole")] = "English sole"
+spp_names[which(spp_names == "Petrale.Sole")] = "Petrale sole"
+spp_names[which(spp_names == "Other.Flatfish")] = "Other flatfish"
+spp_names[which(spp_names == "Other.Groundfish")] = "Other groundfish"
+
+fit$Species = spp_names[fit$ID]
+
+fit$year = seq(1981,2019)[fit$time]
+
+g1 = ggplot(dplyr::filter(fit, Model=="RW"), aes(year, estimate)) + 
+  geom_ribbon(aes(ymin=lower,ymax=upper),alpha=0.2) + 
+  geom_line() + 
+  geom_point(aes(year, y),col="red",alpha=0.3) + 
+  theme_bw() + 
+  facet_wrap(~ Species, scale="free_y") + ylab("Estimate") + 
+  xlab("Year") +
+  theme(strip.background =element_rect(fill="white"))
+
+print(g1)
+```
+
+
+```{r fig3, echo=FALSE, fig.cap="Model predictions (95% CIs, grey ribbon), posterior estimates (solid lines) and observations (red points) for each of the species in our analysis of USA west coast commercial landings data. Results are shown for the B-spline model with 6 knots.", fig.height=7, fig.pos="placeHere"}
+g1 = ggplot(dplyr::filter(fit, Model!="RW"), aes(year, estimate)) + 
+  geom_ribbon(aes(ymin=lower,ymax=upper),alpha=0.2) + 
+  geom_line() + 
+  geom_point(aes(year, y),col="red",alpha=0.3) + 
+  theme_bw() + 
+  facet_wrap(~ Species, scale="free_y") + ylab("Estimate") + 
+  xlab("Year") +
+  theme(strip.background =element_rect(fill="white"))
+g1
+```
+ 

@@ -119,6 +119,22 @@ loos[[11]] = loo::loo(m[[11]]$model,moment_match=TRUE)
 m[[12]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "gp", n_knots = max(x$time), gp_theta_prior = c(5,5),par_list="all")
 loos[[12]] = loo::loo(m[[12]]$model,moment_match=TRUE)
 
+# fit models with varying numbers of knots in a gp
+m[[13]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "ps", n_knots = 6, gp_theta_prior = c(5,5),par_list="all")
+loos[[13]] = loo::loo(m[[13]]$model,moment_match=TRUE)
+
+m[[14]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "ps", n_knots = 12, gp_theta_prior = c(5,5),par_list="all")
+loos[[14]] = loo::loo(m[[14]]$model,moment_match=TRUE)
+
+m[[15]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "ps", n_knots = 18, gp_theta_prior = c(5,5),par_list="all")
+loos[[15]] = loo::loo(m[[15]]$model,moment_match=TRUE)
+
+m[[16]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "ps", n_knots = 24, gp_theta_prior = c(5,5),par_list="all")
+loos[[16]] = loo::loo(m[[16]]$model,moment_match=TRUE)
+
+m[[17]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "ps", n_knots = 30, gp_theta_prior = c(5,5),par_list="all")
+loos[[17]] = loo::loo(m[[17]]$model,moment_match=TRUE)
+
 saveRDS(m, "output/calcofi_models.rds")
 saveRDS(loos, "output/calcofi_loos.rds")
 
