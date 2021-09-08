@@ -5,11 +5,11 @@ library(future)
 plan(multisession)
 
 n_ts = 3
-n_time = 30
+n_time = 20
 n_trends = 1
 om_grid = expand.grid(num_ts = n_ts,
-                      sigma = c(0.1,0.4,0.7),
-                      gen_model = c("RW", "ARMA","Spline"),
+                      sigma = c(0.5,0.75,1),
+                      gen_model = c("RW", "ARMA"),
                       iter=1:100)
 om_grid$sim = seq_len(nrow(om_grid))
 # sample 10% hold outs from each time series
@@ -46,8 +46,8 @@ for(i in 1:nrow(om_grid)) {
   sim_dat = list(x = cumsum(rnorm(n_time)))
 
   if(om_grid$gen_model[i] == "ARMA") {
-    theta = 0.8
-    phi = 0.8
+    theta = 0.9
+    phi = 0.9
     devs = rnorm(1,0,1)
     sim_dat$x[1] = rnorm(1,0,1)
     for(t in 2:n_time) {
@@ -55,10 +55,10 @@ for(i in 1:nrow(om_grid)) {
       sim_dat$x[t] = phi*sim_dat$x[t-1]+devs[t-1]
     }
   }
-  if(om_grid$gen_model[i] == "Spline") {
-    K = 5
-    sim_dat$x = poly(1:n_time, degree = K) %*% matrix(rnorm(K),ncol=1)
-  }
+  # if(om_grid$gen_model[i] == "Spline") {
+  #   K = 5
+  #   sim_dat$x = poly(1:n_time, degree = K) %*% matrix(rnorm(K),ncol=1)
+  # }
 
   sim_dat$pred = matrix(sim_dat$x, ncol = 1) %*% t(loadings_matrix)
   sim_dat$y_sim = t(sim_dat$pred + rnorm(n_ts * n_time, 0, om_grid$sigma[i]))
@@ -87,9 +87,9 @@ for(i in 1:nrow(om_grid)) {
                     trend_model = "gp",n_knots=n_time, scale="none")
 
   df = data.frame("id" = seq(1,length(drop_out)),
-                  "ts" = sort(rep(1:4,3)),
+                  "ts" = sort(rep(1:3,2)),
                   "time" = rep(1:n_time,n_ts)[drop_out],
-                  loadings = loadings_matrix[,1][sort(rep(1:4,3))],
+                  loadings = loadings_matrix[,1][sort(rep(1:3,2))],
                   "elpd"=NA,
                   "sim"=om_grid$sim[i],
                   "sigma" = om_grid$sigma[i],
