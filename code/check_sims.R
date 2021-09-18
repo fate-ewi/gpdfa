@@ -51,7 +51,7 @@ get_log_dens <- function(sim_dat, model) {
 
 # !? look at some?
 set.seed(6 * 1929)
-sim <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.5)
+sim <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.3)
 m_rw <- fit_dfa(y = sim$y_sim, iter = 300, chains = 1, scale = "none")
 m_bs <- fit_dfa(
   y = sim$y_sim, iter = 300, chains = 1,
