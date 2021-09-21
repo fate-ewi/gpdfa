@@ -1,6 +1,7 @@
 library(bayesdfa)
 library(dplyr)
 library(ggplot2)
+source("code/sim_dfa2.R")
 
 log_sum_exp <- function(x) {
   max_x <- max(x)
@@ -25,33 +26,14 @@ get_log_dens <- function(sim_dat, model) {
   log_density
 }
 
-# a version with pure simulated data:
+set.seed(123)
 
-# sim_and_fit2 <- function(draw_i) {
-#   cat(draw_i, "\n")
-#   set.seed(draw_i * 1929)
-#   pred <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.1)
-#   m_rw <- fit_dfa(y = pred$y_sim, iter = 200, chains = 1)
-#   m_bs <- fit_dfa(
-#     y = pred$y_sim, iter = 200, chains = 1,
-#     trend_model = "bs", n_knots = 10
-#   )
-#   data.frame(
-#     i = draw_i, elpd_rw = get_log_dens(post_sim, m_rw),
-#     elpd_bs = get_log_dens(post_sim, m_bs)
-#   )
-# }
-#
-# out2 <- purrr::map_dfr(
-#   seq_len(8),
-#   function(x) sim_and_fit2(draw_i = x)
-# )
-# ggplot(out2, aes(x = elpd_bs - elpd_rw)) +
-#   geom_histogram()
+# Pick one:
+# TYPE <- "ARMA"
+TYPE <- "RW"
 
-# !? look at some?
-set.seed(6 * 33)
-sim <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.3,
+sim <- sim_dfa2(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.3,
+  type = TYPE,
   loadings_matrix = matrix(nrow = 6, ncol = 1,
       rnorm(6 * 1, 1, 0.2)))
 m_rw <- fit_dfa(y = sim$y_sim, iter = 300, chains = 1, scale = "none")
@@ -96,7 +78,10 @@ mutate(p_df_rw, type = "RW fitted") %>%
   geom_line() +
   facet_wrap(~time_series, scale = "free_y")
 
-all <- left_join(rename(p_df_rw, rw_fitted = value), rename(p_df_bs, bs_fitted = value)) %>% left_join(rename(sim_df, true_value = value)) %>%
+all <- left_join(
+  rename(p_df_rw, rw_fitted = value),
+  rename(p_df_bs, bs_fitted = value)) %>%
+  left_join(rename(sim_df, true_value = value)) %>%
   left_join(rename(sim_df_obs, obs_value = value))
 
 plot(all$bs_fitted, all$true_value)
