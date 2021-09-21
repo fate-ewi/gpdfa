@@ -50,8 +50,10 @@ get_log_dens <- function(sim_dat, model) {
 #   geom_histogram()
 
 # !? look at some?
-set.seed(6 * 1929)
-sim <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.3)
+set.seed(6 * 33)
+sim <- sim_dfa(num_trends = 1, num_years = 30, num_ts = 6, sigma = 0.3,
+  loadings_matrix = matrix(nrow = 6, ncol = 1,
+      rnorm(6 * 1, 1, 0.2)))
 m_rw <- fit_dfa(y = sim$y_sim, iter = 300, chains = 1, scale = "none")
 m_bs <- fit_dfa(
   y = sim$y_sim, iter = 300, chains = 1,
@@ -94,22 +96,36 @@ mutate(p_df_rw, type = "RW fitted") %>%
   geom_line() +
   facet_wrap(~time_series, scale = "free_y")
 
+all <- left_join(rename(p_df_rw, rw_fitted = value), rename(p_df_bs, bs_fitted = value)) %>% left_join(rename(sim_df, true_value = value)) %>%
+  left_join(rename(sim_df_obs, obs_value = value))
+
+plot(all$bs_fitted, all$true_value)
+plot(all$rw_fitted, all$true_value)
+
 # true; hack the sigma:
-log_sum_exp(dnorm(sim_df$value, p_df_rw$value,
+log_sum_exp(dnorm(all$rw_fitted, all$true_value,
   sd = mean(rstan::extract(m_rw$model)$sigma), log = TRUE
 ))
-log_sum_exp(dnorm(sim_df$value, p_df_bs$value,
+log_sum_exp(dnorm(all$bs_fitted, all$true_value,
   sd = mean(rstan::extract(m_bs$model)$sigma), log = TRUE
 ))
 
 # obs; hacked sigma:
-log_sum_exp(dnorm(sim_df_obs$value, p_df_rw$value,
+log_sum_exp(dnorm(all$rw_fitted, all$obs_value,
   sd = mean(rstan::extract(m_rw$model)$sigma), log = TRUE
 ))
-log_sum_exp(dnorm(sim_df_obs$value, p_df_bs$value,
+log_sum_exp(dnorm(all$bs_fitted, all$obs_value,
   sd = mean(rstan::extract(m_bs$model)$sigma), log = TRUE
 ))
 
 # actual ELPD:
 get_log_dens(sim$y_sim, m_rw)
 get_log_dens(sim$y_sim, m_bs)
+
+# check what get_log_dens() is doing:
+e <- rstan::extract(m_rw$model)
+pred <- predicted(m_rw)
+plot(sim$y_sim[1,], apply(pred[, 1L, , 1L], 2, mean))
+plot(sim$y_sim[2,], apply(pred[, 1L, , 2L], 2, mean))
+plot(sim$y_sim[3,], apply(pred[, 1L, , 3L], 2, mean))
+# looks good
