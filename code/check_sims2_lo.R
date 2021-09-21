@@ -30,7 +30,7 @@ get_log_dens <- function(sim_dat, model, out_of_sample_i) {
   log_density
 }
 
-sim_and_fit <- function(sigma_obs = 0.3, sigma_loadings = 0.1,
+sim_and_fit <- function(sigma_obs = 0.5, sigma_loadings = 0.3,
   type_sim = c("RW", "ARMA")) {
 
   type_sim <- match.arg(type_sim)
@@ -38,14 +38,14 @@ sim_and_fit <- function(sigma_obs = 0.3, sigma_loadings = 0.1,
   sim <- sim_dfa2(
     num_trends = 1,
     num_years = n_t,
-    num_ts = 3,
+    num_ts = 5,
     type = type_sim,
     sigma = sigma_obs,
-    loadings_matrix = matrix(nrow = 3, ncol = 1,
-      rnorm(3 * 1, 1, sigma_loadings)))
+    loadings_matrix = matrix(nrow = 5, ncol = 1,
+      rnorm(5 * 1, 1, sigma_loadings)))
 
   left_out_i <- matrix(sample(seq_len(n_t), round(n_t * 0.1)), nrow = 1)
-  for (i in seq(2, 3)) {
+  for (i in seq(2, 5)) {
     left_out_i <- rbind(left_out_i, sample(seq_len(n_t), round(n_t * 0.1)))
   }
   sim_orig <- sim
@@ -53,9 +53,9 @@ sim_and_fit <- function(sigma_obs = 0.3, sigma_loadings = 0.1,
     sim$y_sim[j, left_out_i] <- NA
   }
 
-  m_rw <- fit_dfa(y = sim$y_sim, iter = 400, chains = 1, scale = "none")
+  m_rw <- fit_dfa(y = sim$y_sim, iter = 300, chains = 1, scale = "none")
   m_bs <- fit_dfa(
-    y = sim$y_sim, iter = 400, chains = 1,
+    y = sim$y_sim, iter = 300, chains = 1,
     trend_model = "bs", n_knots = 13, scale = "none"
   )
   elpd_rw <- get_log_dens(sim_orig$y_sim, m_rw, left_out_i)

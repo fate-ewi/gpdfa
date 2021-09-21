@@ -44,14 +44,14 @@ get_log_dens_left_out <- function(sim_dat, model, out_of_sample_i) {
   log_density
 }
 
-set.seed(123456)
+set.seed(1)
 
 # Pick one:
 # TYPE <- "ARMA"
 TYPE <- "RW"
 
 n_t <- 25
-num_ts <- 5
+num_ts <- 4
 sim <- sim_dfa2(num_trends = 1, num_years = n_t, num_ts = num_ts, sigma = 0.6,
   type = TYPE,
   loadings_matrix = matrix(nrow = num_ts, ncol = 1,
