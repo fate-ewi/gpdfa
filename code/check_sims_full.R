@@ -86,8 +86,9 @@ x <- filter(x, !(mean_loadings == 0 & sigma_loadings == 1))
 
 make_plot <- function(dat) {
   ggplot(dat,
-    aes(sigma_obs, elpd_bs - epld_rw)) +
-    geom_point(position = position_jitter(height = 0, width = 0.01)) +
+    aes(sigma_obs, elpd_bs - epld_rw, group = sigma_obs)) +
+    geom_boxplot() +
+    geom_point(position = position_jitter(height = 0, width = 0.01), alpha=0.5) +
     facet_grid(num_ts~mean_loadings) +
     ggtitle(paste0("Loadings = N(", unique(dat$mean_loadings), ", ",
       unique(dat$sigma_loadings), ")")) +
