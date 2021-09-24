@@ -26,7 +26,8 @@ get_log_dens <- function(sim_dat, model, out_of_sample_i) {
           ))
     }
   }
-  log_density
+  n_samples <- nrow(e$sigma)
+  log_density - log(n_samples * length(out_of_sample_i))
 }
 
 sim_and_fit <- function(sigma_obs = 0.25, sigma_loadings = 0.1,
