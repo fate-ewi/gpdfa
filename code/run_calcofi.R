@@ -85,19 +85,19 @@ m[[1]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin
 loos[[1]] = loo::loo(m[[1]]$model,moment_match=TRUE)
 
 # fit models with varying numbers of knots in a b-spline
-m[[2]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 6,par_list="all")
+m[[2]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "bs", n_knots = 6,par_list="all")
 loos[[2]] = loo::loo(m[[2]]$model,moment_match=TRUE)
 
-m[[3]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 12,par_list="all")
+m[[3]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "bs", n_knots = 12,par_list="all")
 loos[[3]] = loo::loo(m[[3]]$model,moment_match=TRUE)
 
-m[[4]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 18,par_list="all")
+m[[4]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "bs", n_knots = 18,par_list="all")
 loos[[4]] = loo::loo(m[[4]]$model,moment_match=TRUE)
 
-m[[5]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 24,par_list="all")
+m[[5]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "bs", n_knots = 24,par_list="all")
 loos[[5]] = loo::loo(m[[5]]$model,moment_match=TRUE)
 
-m[[6]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "spline", n_knots = 30,par_list="all")
+m[[6]] <- fit_dfa(y = x, data_shape = "long", iter = mcmc_iter, thin = mcmc_thin,chains = mcmc_chains, num_trends = 1, trend_model = "bs", n_knots = 30,par_list="all")
 loos[[6]] = loo::loo(m[[6]]$model,moment_match=TRUE)
 
 # fit models with varying numbers of knots in a gp
