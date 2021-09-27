@@ -11,3 +11,5 @@
 *.RData
 *.rdb
 *.rdx
+code/.DS_Store
+.DS_Store
