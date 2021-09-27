@@ -1,5 +1,5 @@
 # this one leaves out data points and tests on those
-
+remotes::install_github("fate-ewi/bayesdfa","spline-sim")
 library(bayesdfa)
 library(dplyr)
 library(ggplot2)
@@ -87,10 +87,10 @@ pars <- tidyr::expand_grid(
   sigma_loadings = 0.1,
   scale = c("none"),
   stan_iter = 1000,
-  sigma_obs = c(0.2, 0.5, 0.75),
+  sigma_obs = c(0.25, 0.5, 1),
   type_sim = c("rw"),
   n_knots_sim = 7,
-  n_knots_fit = c(7),
+  n_knots_fit = c(7,13,20),
   iter = seq_len(100)
 )
 pars2 <- pars
