@@ -119,7 +119,7 @@ pars <- tidyr::expand_grid(
   stan_iter = 1000,
   sigma_obs = c(0.25, 0.5, 1),
   type_sim = c("rw"),
-  est_trend_model = "bs",
+  est_trend_model = "ps",
   n_knots_sim = 7,
   n_knots_fit = c(13),
   iter = seq_len(100)
