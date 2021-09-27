@@ -4,6 +4,7 @@ library(bayesdfa)
 library(dplyr)
 library(ggplot2)
 library(future)
+library(viridis)
 plan(multisession, workers = parallel::detectCores() / 2)
 
 log_sum_exp <- function(x) {
@@ -112,24 +113,43 @@ out <- readRDS("output/check-sims.rds")
 x <- bind_cols(out, pars) #%>% filter(!(mean_loadings == 0 & sigma_loadings == 0.001))
 # x <- filter(x, !(mean_loadings == 0 & sigma_loadings == 1))
 
-make_plot <- function(dat) {
-  ggplot(dat,
-    aes(sigma_obs, elpd_bs - epld_rw, group = sigma_obs)) +
-    geom_boxplot() +
-    geom_point(position = position_jitter(height = 0, width = 0.01), alpha=0.5) +
-    facet_grid(num_ts~mean_loadings) +
-    ggtitle(paste0("Loadings = N(", unique(dat$mean_loadings), ", ",
-      unique(dat$sigma_loadings), ")")) +
-    geom_hline(yintercept = 0, lty = 2)
-}
+x$n_knots_fit = as.factor(x$n_knots_fit)
+x$sigma_obs = as.factor(x$sigma_obs)
+x$type_sim = factor(x$type_sim)
+levels(x$type_sim) = c("B-spline","Random walk")
+g = ggplot(x,
+       aes(n_knots_fit, elpd_bs - epld_rw, col=sigma_obs)) +
+  geom_boxplot(alpha=0.4) +
+  facet_wrap(~type_sim) +
+  coord_cartesian(ylim=c(-45,20)) +
+  geom_hline(yintercept = 0, lty = 2) +
+  theme_bw() +
+    xlab("Knots") +
+  ylab(expression(paste("ELPD - ",ELPD[RW]))) +
+  scale_fill_viridis(discrete=TRUE, end=0.8) +
+  scale_color_viridis(discrete=TRUE, end=0.8) +
+  theme(strip.background =element_rect(fill="white")) +
+  labs(col = expression(sigma[obs]))
 
-g <- x %>%
-  # filter(sigma_obs > 0.21) %>%
-  # filter(sigma_loadings > 0.1) %>%
-  group_by(mean_loadings, sigma_loadings) %>%
-  group_split() %>%
-  purrr::map(make_plot)
-cowplot::plot_grid(plotlist = g, ncol = 2)
+
+# make_plot <- function(dat) {
+#   ggplot(dat,
+#     aes(sigma_obs, elpd_bs - epld_rw, group = sigma_obs)) +
+#     geom_boxplot() +
+#     geom_point(position = position_jitter(height = 0, width = 0.01), alpha=0.5) +
+#     facet_grid(num_ts~mean_loadings) +
+#     ggtitle(paste0("Loadings = N(", unique(dat$mean_loadings), ", ",
+#       unique(dat$sigma_loadings), ")")) +
+#     geom_hline(yintercept = 0, lty = 2)
+# }
+#
+# g <- x %>%
+#   # filter(sigma_obs > 0.21) %>%
+#   # filter(sigma_loadings > 0.1) %>%
+#   group_by(mean_loadings, sigma_loadings) %>%
+#   group_split() %>%
+#   purrr::map(make_plot)
+# cowplot::plot_grid(plotlist = g, ncol = 2)
 
 # x_rw <- furrr::future_map_dfr(1:(1*8), ~ sim_and_fit(type_sim = "RW"), .id = "iter")
 # plot(x_rw$epld_rw - x_rw$elpd_bs);abline(h = 0, lty = 2)
