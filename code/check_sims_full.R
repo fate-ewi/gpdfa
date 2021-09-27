@@ -34,7 +34,7 @@ get_log_dens <- function(sim_dat, model, out_of_sample_i) {
 sim_and_fit <- function(sigma_obs = 0.25, sigma_loadings = 0.1,
   mean_loadings = 1, scale = "none",
   type_sim = c("rw", "bs"), num_ts = 3, n_t = 20, stan_iter = 300,
-  n_knots_fit = 7, n_knots_sim = 7,
+  n_knots_fit = 7, n_knots_sim = 7, est_trend_model = "bs",
   seed = sample.int(.Machine$integer.max, 1L), ...) {
   type_sim <- match.arg(type_sim)
   num_trends <- 1
@@ -60,7 +60,7 @@ sim_and_fit <- function(sigma_obs = 0.25, sigma_loadings = 0.1,
   m_rw <- fit_dfa(y = sim$y_sim, iter = stan_iter, chains = 1, scale = scale)
   m_bs <- fit_dfa(
     y = sim$y_sim, iter = stan_iter, chains = 1,
-    trend_model = "bs", n_knots = n_knots_fit, scale = scale
+    trend_model = est_trend_model, n_knots = n_knots_fit, scale = scale
   )
 
   max_rhat_rw <- get_rhat(m_rw$model)
@@ -90,6 +90,7 @@ pars <- tidyr::expand_grid(
   stan_iter = 1000,
   sigma_obs = c(0.25, 0.5, 1),
   type_sim = c("rw"),
+  est_trend_model = "bs",
   n_knots_sim = 7,
   n_knots_fit = c(7,13,20),
   iter = seq_len(100)
@@ -107,30 +108,66 @@ tictoc::tic()
 out <- furrr::future_pmap_dfr(pars, sim_and_fit, .progress = TRUE)
 tictoc::toc()
 
-saveRDS(out, file = "output/check-sims.rds")
-out <- readRDS("output/check-sims.rds")
+saveRDS(out, file = "output/check-sims-bs.rds")
 
-x <- bind_cols(out, pars) #%>% filter(!(mean_loadings == 0 & sigma_loadings == 0.001))
-# x <- filter(x, !(mean_loadings == 0 & sigma_loadings == 1))
 
-x$n_knots_fit = as.factor(x$n_knots_fit)
-x$sigma_obs = as.factor(x$sigma_obs)
-x$type_sim = factor(x$type_sim)
-levels(x$type_sim) = c("B-spline","Random walk")
-g = ggplot(x,
-       aes(n_knots_fit, elpd_bs - epld_rw, col=sigma_obs)) +
-  geom_boxplot(alpha=0.4) +
-  facet_wrap(~type_sim) +
-  coord_cartesian(ylim=c(-45,20)) +
-  geom_hline(yintercept = 0, lty = 2) +
-  theme_bw() +
-    xlab("Knots") +
-  ylab(expression(paste("ELPD - ",ELPD[RW]))) +
-  scale_fill_viridis(discrete=TRUE, end=0.8) +
-  scale_color_viridis(discrete=TRUE, end=0.8) +
-  theme(strip.background =element_rect(fill="white")) +
-  labs(col = expression(sigma[obs]))
+pars <- tidyr::expand_grid(
+  num_ts = c(3),
+  mean_loadings = 1,
+  sigma_loadings = 0.1,
+  scale = c("none"),
+  stan_iter = 1000,
+  sigma_obs = c(0.25, 0.5, 1),
+  type_sim = c("rw"),
+  est_trend_model = "bs",
+  n_knots_sim = 7,
+  n_knots_fit = c(13),
+  iter = seq_len(100)
+)
+pars2 <- pars
+pars2$type_sim <- "bs"
+pars <- bind_rows(pars, pars2)
 
+set.seed(1)
+pars$seed <- sample.int(1e6, nrow(pars))
+nrow(pars)
+
+tictoc::tic()
+# out <- purrr::pmap_dfr(pars[1,], sim_and_fit)
+out <- furrr::future_pmap_dfr(pars, sim_and_fit, .progress = TRUE)
+tictoc::toc()
+
+x <- bind_cols(out, pars)
+saveRDS(x, file = "output/check-sims-ps.rds")
+
+pars <- tidyr::expand_grid(
+  num_ts = c(3),
+  mean_loadings = 1,
+  sigma_loadings = 0.1,
+  scale = c("none"),
+  stan_iter = 1000,
+  sigma_obs = c(0.25, 0.5, 1),
+  type_sim = c("rw"),
+  est_trend_model = "gp",
+  n_knots_sim = 7,
+  n_knots_fit = c(20),
+  iter = seq_len(100)
+)
+pars2 <- pars
+pars2$type_sim <- "bs"
+pars <- bind_rows(pars, pars2)
+
+set.seed(1)
+pars$seed <- sample.int(1e6, nrow(pars))
+nrow(pars)
+
+tictoc::tic()
+# out <- purrr::pmap_dfr(pars[1,], sim_and_fit)
+out <- furrr::future_pmap_dfr(pars, sim_and_fit, .progress = TRUE)
+tictoc::toc()
+
+x <- bind_cols(out, pars)
+saveRDS(x, file = "output/check-sims-gp.rds")
 
 # make_plot <- function(dat) {
 #   ggplot(dat,
